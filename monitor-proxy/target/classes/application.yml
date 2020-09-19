@@ -1,0 +1,12 @@
+server:
+  port: 2081
+
+monitor:
+  threshold: 10
+
+logging:
+  level:
+    ROOT: INFO
+    org.springframework.web: ERROR
+    com.ibatis: debug
+    com.cetccity: info

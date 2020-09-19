@@ -1,0 +1,18 @@
+{
+  "groups": [
+    {
+      "name": "spring.datasource.go",
+      "type": "javax.sql.DataSource",
+      "sourceType": "edu.nuaa.nettop.config.GoDataSourceConfig",
+      "sourceMethod": "getDateSource2()"
+    },
+    {
+      "name": "spring.datasource.nettop",
+      "type": "javax.sql.DataSource",
+      "sourceType": "edu.nuaa.nettop.config.NettopDataSourceConfig",
+      "sourceMethod": "getDateSource1()"
+    }
+  ],
+  "properties": [],
+  "hints": []
+}

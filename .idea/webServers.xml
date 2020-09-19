@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="WebServers">
+    <option name="servers">
+      <webServer id="7987d7ea-abc2-4616-8e9c-e17a4a81914d" name="lab3">
+        <fileTransfer rootFolder="/home/nuaa/wuweinan/jlxd-monitor-new" accessType="SFTP" host="192.168.31.13" port="22" sshConfigId="964fae23-df6f-4b9d-8115-841a765df4a6" sshConfig="nuaa@192.168.31.13:22 password">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" passiveMode="true" shareSSLContext="true" />
+          </advancedOptions>
+        </fileTransfer>
+      </webServer>
+      <webServer id="b4f7a254-cbe6-4b46-9c32-5c4b6afccc6a" name="lab5">
+        <fileTransfer rootFolder="/home/nuaa/wuweinan/jlxd-monitor-new" accessType="SFTP" host="192.168.31.15" port="22" sshConfigId="a2be45dc-afa3-4093-af28-484d59b2dbbd" sshConfig="nuaa@192.168.31.15:22 password">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" passiveMode="true" shareSSLContext="true" />
+          </advancedOptions>
+        </fileTransfer>
+      </webServer>
+    </option>
+  </component>
+</project>
