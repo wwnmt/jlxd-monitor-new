@@ -48,7 +48,6 @@ public class MonitorServiceImpl implements MonitorService {
     private final DeployDOMapper deployDOMapper;
     private final LinkDOMapper linkDOMapper;
     private final PortDOMapper portDOMapper;
-    private final StringRedisTemplate stringRedisTemplate;
 
     @Autowired
     public MonitorServiceImpl(TaskScheduler taskScheduler,
@@ -56,14 +55,13 @@ public class MonitorServiceImpl implements MonitorService {
                               NodeDOMapper nodeDOMapper,
                               DeployDOMapper deployDOMapper,
                               LinkDOMapper linkDOMapper,
-                              PortDOMapper portDOMapper, StringRedisTemplate stringRedisTemplate) {
+                              PortDOMapper portDOMapper) {
         this.taskScheduler = taskScheduler;
         this.serviceNetDOMapper = serviceNetDOMapper;
         this.nodeDOMapper = nodeDOMapper;
         this.deployDOMapper = deployDOMapper;
         this.linkDOMapper = linkDOMapper;
         this.portDOMapper = portDOMapper;
-        this.stringRedisTemplate = stringRedisTemplate;
     }
 
     @Override

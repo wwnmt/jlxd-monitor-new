@@ -3,20 +3,25 @@ package edu.nuaa.nettop.service.impl;
 import com.alibaba.fastjson.JSON;
 import edu.nuaa.nettop.common.constant.TaskType;
 import edu.nuaa.nettop.common.exception.MonitorException;
+import edu.nuaa.nettop.common.model.Link;
 import edu.nuaa.nettop.dao.go.DeployDOMapper;
 import edu.nuaa.nettop.dao.go.ServerDOMapper;
 import edu.nuaa.nettop.dao.main.DDosTdDOMapper;
+import edu.nuaa.nettop.dao.main.LinkDOMapper;
 import edu.nuaa.nettop.dao.main.NodeDOMapper;
+import edu.nuaa.nettop.dao.main.PortDOMapper;
 import edu.nuaa.nettop.dao.main.ServiceNetDOMapper;
 import edu.nuaa.nettop.dao.main.TaskDOMapper;
 import edu.nuaa.nettop.entity.DDosTaskDO;
+import edu.nuaa.nettop.entity.LinkDO;
 import edu.nuaa.nettop.entity.TaskForDDosDO;
 import edu.nuaa.nettop.quartz.TaskScheduler;
 import edu.nuaa.nettop.service.ScreenService;
 import edu.nuaa.nettop.task.DDosScreenTask;
-import edu.nuaa.nettop.task.NodeMonitorTask;
+import edu.nuaa.nettop.task.PerfScreenTask;
+import edu.nuaa.nettop.task.VrScreenTask;
 import edu.nuaa.nettop.vo.DDosScreenRequest;
-import edu.nuaa.nettop.vo.PerformanceScreenRequest;
+import edu.nuaa.nettop.vo.PerfScreenRequest;
 import edu.nuaa.nettop.vo.VrScreenRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
@@ -26,6 +31,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Created with IntelliJ IDEA.
@@ -45,9 +51,11 @@ public class ScreenServiceImpl implements ScreenService {
     private final NodeDOMapper nodeDOMapper;
     private final DDosTdDOMapper dDosTdDOMapper;
     private final ServerDOMapper serverDOMapper;
+    private final LinkDOMapper linkDOMapper;
+    private final PortDOMapper portDOMapper;
 
     @Autowired
-    public ScreenServiceImpl(TaskScheduler taskScheduler, TaskDOMapper taskDOMapper, DeployDOMapper deployDOMapper, ServiceNetDOMapper serviceNetDOMapper, NodeDOMapper nodeDOMapper, DDosTdDOMapper dDosTdDOMapper, ServerDOMapper serverDOMapper) {
+    public ScreenServiceImpl(TaskScheduler taskScheduler, TaskDOMapper taskDOMapper, DeployDOMapper deployDOMapper, ServiceNetDOMapper serviceNetDOMapper, NodeDOMapper nodeDOMapper, DDosTdDOMapper dDosTdDOMapper, ServerDOMapper serverDOMapper, LinkDOMapper linkDOMapper, PortDOMapper portDOMapper) {
         this.taskScheduler = taskScheduler;
         this.taskDOMapper = taskDOMapper;
         this.deployDOMapper = deployDOMapper;
@@ -55,6 +63,8 @@ public class ScreenServiceImpl implements ScreenService {
         this.nodeDOMapper = nodeDOMapper;
         this.dDosTdDOMapper = dDosTdDOMapper;
         this.serverDOMapper = serverDOMapper;
+        this.linkDOMapper = linkDOMapper;
+        this.portDOMapper = portDOMapper;
     }
 
     @Override
@@ -107,6 +117,31 @@ public class ScreenServiceImpl implements ScreenService {
     }
 
     @Override
+    public VrScreenRequest createVrScreen(String wlid) throws MonitorException {
+        VrScreenRequest request = new VrScreenRequest();
+
+        request.setWlid(wlid);
+        //读取服务器列表
+        List<String> serverIps = serverDOMapper.listServerIp();
+        request.setServerIps(serverIps);
+
+        return request;
+    }
+
+    @Override
+    public PerfScreenRequest createPerfScreen(String wlid) throws MonitorException {
+        PerfScreenRequest request = new PerfScreenRequest();
+
+        request.setWlid(wlid);
+        //读取服务器列表
+        List<String> serverIps = serverDOMapper.listServerIp();
+        request.setServerIps(serverIps);
+        //读取链路信息
+
+        return request;
+    }
+
+    @Override
     public void addDDosScreen(DDosScreenRequest request) throws MonitorException {
         //TODO 验证参数
         log.info("Recv ddos screen request-> {}", JSON.toJSONString(request));
@@ -133,12 +168,47 @@ public class ScreenServiceImpl implements ScreenService {
 
     @Override
     public void addVrScreen(VrScreenRequest request) throws MonitorException {
-
+        //TODO 验证参数
+        log.info("Recv Vr screen request-> {}", JSON.toJSONString(request));
+        String jobName = request.getWlid();
+        String jobGroup = TaskType.VR_SCREEN.getDesc();
+        try {
+            //判断任务已存在
+            if (taskScheduler.checkExists(jobName, jobGroup)) {
+                throw new MonitorException(String.format("Job已经存在, jobName:{%s},jobGroup:{%s}", jobName, jobGroup));
+            }
+            //配置参数
+            JobDataMap jobDataMap = new JobDataMap();
+            jobDataMap.put("wlid", request.getWlid());
+            jobDataMap.put("servers", request.getServerIps());
+            //提交任务
+            taskScheduler.publishJob(jobName, jobGroup, jobDataMap, 5, VrScreenTask.class);
+        } catch (SchedulerException e) {
+            throw new MonitorException(e.getMessage());
+        }
     }
 
     @Override
-    public void addNetPerformanceScreen(PerformanceScreenRequest request) throws MonitorException {
-
+    public void addPerformanceScreen(PerfScreenRequest request) throws MonitorException {
+        //TODO 验证参数
+        log.info("Recv Perf screen request-> {}", JSON.toJSONString(request));
+        String jobName = request.getWlid();
+        String jobGroup = TaskType.VR_SCREEN.getDesc();
+        try {
+            //判断任务已存在
+            if (taskScheduler.checkExists(jobName, jobGroup)) {
+                throw new MonitorException(String.format("Job已经存在, jobName:{%s},jobGroup:{%s}", jobName, jobGroup));
+            }
+            //配置参数
+            JobDataMap jobDataMap = new JobDataMap();
+            jobDataMap.put("wlid", request.getWlid());
+            jobDataMap.put("servers", request.getServerIps());
+//            jobDataMap.put("links", JSON.toJSONString(request.getLinks()));
+            //提交任务
+            taskScheduler.publishJob(jobName, jobGroup, jobDataMap, 5, PerfScreenTask.class);
+        } catch (SchedulerException e) {
+            throw new MonitorException(e.getMessage());
+        }
     }
 
     @Override
@@ -149,5 +219,6 @@ public class ScreenServiceImpl implements ScreenService {
     @Override
     public void deleteScreen(String jobName, String jobGroup) throws MonitorException {
         taskScheduler.deleteTask(jobName, jobGroup);
+        //清空redis缓存数据
     }
 }
