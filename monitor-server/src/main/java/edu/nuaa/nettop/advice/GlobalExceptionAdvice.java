@@ -34,4 +34,12 @@ public class GlobalExceptionAdvice {
         response.setMsg(e.getMessage());
         return response;
     }
+
+    @ExceptionHandler(value = RuntimeException.class)
+    public BoRestResObj handlerResourceRunException(RuntimeException e) {
+        BoRestResObj response = new BoRestResObj();
+        response.setOptres(0);
+        response.setMsg(e.getMessage());
+        return response;
+    }
 }

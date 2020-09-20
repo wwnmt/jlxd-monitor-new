@@ -7,7 +7,7 @@ import edu.nuaa.nettop.service.ScreenService;
 import edu.nuaa.nettop.vo.DDosScreenRequest;
 import edu.nuaa.nettop.vo.NetRequest;
 import edu.nuaa.nettop.vo.PerfScreenRequest;
-import edu.nuaa.nettop.vo.Response;
+import edu.nuaa.nettop.common.response.Response;
 import edu.nuaa.nettop.vo.VrScreenRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
