@@ -6,7 +6,9 @@ import edu.nuaa.nettop.service.MonitorService;
 import edu.nuaa.nettop.service.ScreenService;
 import edu.nuaa.nettop.vo.DDosScreenRequest;
 import edu.nuaa.nettop.vo.NetRequest;
-import edu.nuaa.nettop.vo.Response;
+import edu.nuaa.nettop.vo.PerfScreenRequest;
+import edu.nuaa.nettop.common.response.Response;
+import edu.nuaa.nettop.vo.VrScreenRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -65,6 +67,34 @@ public class NetMonitorController {
     public Response cancelDDosScreen(@PathVariable("wlid") String wlid) throws MonitorException {
         screenService.cancelScreen(wlid, TaskType.DDOS_SCREEN.getDesc());
         screenService.deleteScreen(wlid, TaskType.DDOS_SCREEN.getDesc());
+        return new Response("ok");
+    }
+
+    @GetMapping("/screen/virtrealconn/start/{wlid}")
+    public Response runVrScreen(@PathVariable("wlid") String wlid) throws MonitorException {
+        VrScreenRequest request = screenService.createVrScreen(wlid);
+        screenService.addVrScreen(request);
+        return new Response("ok");
+    }
+
+    @GetMapping("/screen/virtrealconn/stop/{wlid}")
+    public Response cancelVrScreen(@PathVariable("wlid") String wlid) throws MonitorException {
+        screenService.cancelScreen(wlid, TaskType.VR_SCREEN.getDesc());
+        screenService.deleteScreen(wlid, TaskType.VR_SCREEN.getDesc());
+        return new Response("ok");
+    }
+
+    @GetMapping("/screen/perfopt/start/{wlid}")
+    public Response runPerfScreen(@PathVariable("wlid") String wlid) throws MonitorException {
+        PerfScreenRequest request = screenService.createPerfScreen(wlid);
+        screenService.addPerformanceScreen(request);
+        return new Response("ok");
+    }
+
+    @GetMapping("/screen/perfopt/stop/{wlid}")
+    public Response cancelPerfScreen(@PathVariable("wlid") String wlid) throws MonitorException {
+        screenService.cancelScreen(wlid, TaskType.PRO_SCREEN.getDesc());
+        screenService.deleteScreen(wlid, TaskType.PRO_SCREEN.getDesc());
         return new Response("ok");
     }
 }

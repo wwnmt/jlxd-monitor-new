@@ -2,20 +2,15 @@ package edu.nuaa.nettop.controller;
 
 import edu.nuaa.nettop.common.constant.TaskType;
 import edu.nuaa.nettop.common.exception.MonitorException;
-import edu.nuaa.nettop.dao.main.TaskDOMapper;
-import edu.nuaa.nettop.entity.DDosTaskDO;
-import edu.nuaa.nettop.entity.TaskForDDosDO;
 import edu.nuaa.nettop.service.ScreenService;
 import edu.nuaa.nettop.vo.DDosScreenRequest;
-import edu.nuaa.nettop.vo.Response;
+import edu.nuaa.nettop.common.response.Response;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.List;
 
 /**
  * Created with IntelliJ IDEA.

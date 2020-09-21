@@ -1,5 +1,6 @@
 package edu.nuaa.nettop.vo;
 
+import edu.nuaa.nettop.common.model.Link;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -12,16 +13,16 @@ import java.util.List;
  * Description:
  * User: WeinanWu
  * Date: 2020-09-15
- * Time: 18:20
+ * Time: 18:21
  */
 @Data
-@NoArgsConstructor
 @AllArgsConstructor
-public class VrScreenRequest {
+@NoArgsConstructor
+public class PerfScreenRequest {
 
     private String wlid;
 
-    List<String> serverIps = new ArrayList<>();
+    private List<String> serverIps = new ArrayList<>();
 
-
+    private List<Link> links = new ArrayList<>();
 }

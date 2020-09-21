@@ -8,4 +8,8 @@ package edu.nuaa.nettop.common.constant;
  * Time: 18:21
  */
 public class Constants {
+
+    public static class ErrMsg{
+
+    }
 }

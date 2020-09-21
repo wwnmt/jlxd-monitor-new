@@ -1,4 +1,4 @@
-package edu.nuaa.nettop.vo;
+package edu.nuaa.nettop.common.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

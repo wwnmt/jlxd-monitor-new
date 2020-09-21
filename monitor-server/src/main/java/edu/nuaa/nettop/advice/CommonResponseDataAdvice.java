@@ -3,7 +3,7 @@ package edu.nuaa.nettop.advice;
 import com.alibaba.fastjson.JSON;
 import edu.nuaa.nettop.annotation.IgnoreResponseAdvice;
 import edu.nuaa.nettop.common.response.BoRestResObj;
-import edu.nuaa.nettop.vo.Response;
+import edu.nuaa.nettop.common.response.Response;
 import org.springframework.core.MethodParameter;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.HttpMessageConverter;
