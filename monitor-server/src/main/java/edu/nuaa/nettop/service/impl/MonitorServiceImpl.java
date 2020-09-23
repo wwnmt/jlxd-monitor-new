@@ -5,14 +5,16 @@ import edu.nuaa.nettop.common.constant.TaskType;
 import edu.nuaa.nettop.common.exception.MonitorException;
 import edu.nuaa.nettop.common.model.Link;
 import edu.nuaa.nettop.common.model.Node;
+import edu.nuaa.nettop.common.obj.NetPortObj;
+import edu.nuaa.nettop.common.obj.ServerObj;
 import edu.nuaa.nettop.common.utils.CommonUtils;
+import edu.nuaa.nettop.common.utils.ProxyUtil;
 import edu.nuaa.nettop.dao.go.DeployDOMapper;
-import edu.nuaa.nettop.dao.main.LinkDOMapper;
-import edu.nuaa.nettop.dao.main.NodeDOMapper;
-import edu.nuaa.nettop.dao.main.PortDOMapper;
-import edu.nuaa.nettop.dao.main.ServiceNetDOMapper;
+import edu.nuaa.nettop.dao.main.*;
 import edu.nuaa.nettop.entity.LinkDO;
 import edu.nuaa.nettop.entity.NodeDO;
+import edu.nuaa.nettop.entity.PhysicalDevDO;
+import edu.nuaa.nettop.model.ServPort;
 import edu.nuaa.nettop.quartz.TaskScheduler;
 import edu.nuaa.nettop.service.MonitorService;
 import edu.nuaa.nettop.task.NetMonitorTask;
@@ -24,7 +26,6 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.quartz.JobDataMap;
 import org.quartz.SchedulerException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -49,6 +50,7 @@ public class MonitorServiceImpl implements MonitorService {
     private final DeployDOMapper deployDOMapper;
     private final LinkDOMapper linkDOMapper;
     private final PortDOMapper portDOMapper;
+    private final PhysicalDevDOMapper physicalDevDOMapper;
 
     @Autowired
     public MonitorServiceImpl(TaskScheduler taskScheduler,
@@ -56,13 +58,15 @@ public class MonitorServiceImpl implements MonitorService {
                               NodeDOMapper nodeDOMapper,
                               DeployDOMapper deployDOMapper,
                               LinkDOMapper linkDOMapper,
-                              PortDOMapper portDOMapper) {
+                              PortDOMapper portDOMapper,
+                              PhysicalDevDOMapper physicalDevDOMapper) {
         this.taskScheduler = taskScheduler;
         this.serviceNetDOMapper = serviceNetDOMapper;
         this.nodeDOMapper = nodeDOMapper;
         this.deployDOMapper = deployDOMapper;
         this.linkDOMapper = linkDOMapper;
         this.portDOMapper = portDOMapper;
+        this.physicalDevDOMapper = physicalDevDOMapper;
     }
 
     @Override
@@ -206,5 +210,24 @@ public class MonitorServiceImpl implements MonitorService {
         //删除redis数据
         //TODO
         CommonUtils.delInRedis(jobName+"tm");
+    }
+
+    @Override
+    public ServerObj getPhysicalInterfaceInfo(String wlid, String sbid) throws MonitorException {
+        PhysicalDevDO physicalDevDO = physicalDevDOMapper.selectByPrimaryKey(sbid);
+        String serverIp = deployDOMapper.queryServerIpByDeviceName(nodeDOMapper.findNodeNameByPrimaryKey(sbid));
+        String physicalIntName = physicalDevDO.getLjsb();
+        ServPort servPort = ProxyUtil.getServPort(serverIp, serverIp);
+        for (ServPort.Port port : servPort.getPorts()) {
+            if (port.getDkmc().equals(physicalIntName)) {
+                ServerObj serverObj = new ServerObj();
+                NetPortObj portObj = new NetPortObj();
+                portObj.setIp(port.getIp());
+                portObj.setMc(port.getDkmc());
+                serverObj.setPort(portObj);
+                return serverObj;
+            }
+        }
+        return null;
     }
 }

@@ -3,6 +3,7 @@ package edu.nuaa.nettop.controller;
 import edu.nuaa.nettop.common.constant.Constants;
 import edu.nuaa.nettop.common.constant.TaskType;
 import edu.nuaa.nettop.common.exception.MonitorException;
+import edu.nuaa.nettop.common.obj.ServerObj;
 import edu.nuaa.nettop.common.obj.ServerReqObj;
 import edu.nuaa.nettop.common.obj.ServerReqParam;
 import edu.nuaa.nettop.common.utils.CommonUtils;
@@ -121,5 +122,11 @@ public class NetMonitorController {
         screenService.cancelScreen(wlid, TaskType.PRO_SCREEN.getDesc());
         screenService.deleteScreen(wlid, TaskType.PRO_SCREEN.getDesc());
         return new Response("ok");
+    }
+
+    @GetMapping("/virtreal/getserver/{wlid}/{sbid}")
+    @ResponseBody
+    public ServerObj getServer(@PathVariable("wlid") String wlid, @PathVariable String sbid) throws MonitorException {
+        return monitorService.getPhysicalInterfaceInfo(wlid, sbid);
     }
 }

@@ -15,7 +15,7 @@ public class ServerObj   implements Serializable {
 
 	private String mc;
 	
-	private List<NetPortObj> ports = new ArrayList<NetPortObj>();
+	private NetPortObj port;
 
 	public String getMc() {
 		return mc;
@@ -25,12 +25,12 @@ public class ServerObj   implements Serializable {
 		this.mc = mc;
 	}
 
-	public List<NetPortObj> getPorts() {
-		return ports;
+	public NetPortObj getPort() {
+		return port;
 	}
 
-	public void setPorts(List<NetPortObj> ports) {
-		this.ports = ports;
+	public void setPort(NetPortObj port) {
+		this.port = port;
 	}
 
 	public ServerObj() {

@@ -1,6 +1,7 @@
 package edu.nuaa.nettop.service;
 
 import edu.nuaa.nettop.common.exception.MonitorException;
+import edu.nuaa.nettop.common.obj.ServerObj;
 import edu.nuaa.nettop.vo.NetRequest;
 import edu.nuaa.nettop.vo.NodeRequest;
 
@@ -24,4 +25,6 @@ public interface MonitorService {
     void cancelTask(String jobName, String jobGroup) throws MonitorException;
 
     void deleteTask(String jobName, String jobGroup) throws MonitorException;
+
+    ServerObj getPhysicalInterfaceInfo(String wlid, String sbid) throws MonitorException;
 }
