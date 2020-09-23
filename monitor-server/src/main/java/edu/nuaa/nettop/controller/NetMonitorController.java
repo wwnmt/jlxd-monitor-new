@@ -1,7 +1,11 @@
 package edu.nuaa.nettop.controller;
 
+import edu.nuaa.nettop.common.constant.Constants;
 import edu.nuaa.nettop.common.constant.TaskType;
 import edu.nuaa.nettop.common.exception.MonitorException;
+import edu.nuaa.nettop.common.obj.ServerReqObj;
+import edu.nuaa.nettop.common.obj.ServerReqParam;
+import edu.nuaa.nettop.common.utils.CommonUtils;
 import edu.nuaa.nettop.service.MonitorService;
 import edu.nuaa.nettop.service.ScreenService;
 import edu.nuaa.nettop.vo.DDosScreenRequest;
@@ -13,9 +17,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created with IntelliJ IDEA.
@@ -57,6 +65,7 @@ public class NetMonitorController {
     }
 
     @GetMapping("/screen/ddos/start/{wlid}")
+    @ResponseBody
     public Response runDDosScreen(@PathVariable("wlid") String wlid) throws MonitorException {
         DDosScreenRequest request = screenService.createDDosScreen(wlid);
         screenService.addDDosScreen(request);
@@ -64,6 +73,7 @@ public class NetMonitorController {
     }
 
     @GetMapping("/screen/ddos/stop/{wlid}")
+    @ResponseBody
     public Response cancelDDosScreen(@PathVariable("wlid") String wlid) throws MonitorException {
         screenService.cancelScreen(wlid, TaskType.DDOS_SCREEN.getDesc());
         screenService.deleteScreen(wlid, TaskType.DDOS_SCREEN.getDesc());
@@ -71,6 +81,7 @@ public class NetMonitorController {
     }
 
     @GetMapping("/screen/virtrealconn/start/{wlid}")
+    @ResponseBody
     public Response runVrScreen(@PathVariable("wlid") String wlid) throws MonitorException {
         VrScreenRequest request = screenService.createVrScreen(wlid);
         screenService.addVrScreen(request);
@@ -78,13 +89,26 @@ public class NetMonitorController {
     }
 
     @GetMapping("/screen/virtrealconn/stop/{wlid}")
+    @ResponseBody
     public Response cancelVrScreen(@PathVariable("wlid") String wlid) throws MonitorException {
         screenService.cancelScreen(wlid, TaskType.VR_SCREEN.getDesc());
         screenService.deleteScreen(wlid, TaskType.VR_SCREEN.getDesc());
         return new Response("ok");
     }
 
+    @GetMapping("/virtreal/monitorserver")
+    @ResponseBody
+    public Response addIntf(@RequestBody ServerReqParam param) throws MonitorException {
+        String wlid = param.getWlid();
+        List<ServerReqObj> serverReqObjs = CommonUtils.getOrCreate(wlid,
+                                                   Constants.servIntfMap,
+                                                   ArrayList::new);
+        serverReqObjs.addAll(param.getSports());
+        return new Response("ok");
+    }
+
     @GetMapping("/screen/perfopt/start/{wlid}")
+    @ResponseBody
     public Response runPerfScreen(@PathVariable("wlid") String wlid) throws MonitorException {
         PerfScreenRequest request = screenService.createPerfScreen(wlid);
         screenService.addPerformanceScreen(request);
@@ -92,6 +116,7 @@ public class NetMonitorController {
     }
 
     @GetMapping("/screen/perfopt/stop/{wlid}")
+    @ResponseBody
     public Response cancelPerfScreen(@PathVariable("wlid") String wlid) throws MonitorException {
         screenService.cancelScreen(wlid, TaskType.PRO_SCREEN.getDesc());
         screenService.deleteScreen(wlid, TaskType.PRO_SCREEN.getDesc());

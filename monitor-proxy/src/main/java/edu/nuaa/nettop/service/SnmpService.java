@@ -2,6 +2,7 @@ package edu.nuaa.nettop.service;
 
 
 import edu.nuaa.nettop.model.ServMem;
+import edu.nuaa.nettop.model.ServPort;
 import edu.nuaa.nettop.vo.snmp.SnmpRequest;
 
 /**
@@ -17,6 +18,8 @@ public interface SnmpService {
     String getServerMemoryUtilization(SnmpRequest request);
 
     ServMem getServerAllMem(SnmpRequest request);
+
+    ServPort getServerPort(SnmpRequest request);
 
     Long getUdpIn(SnmpRequest request);
 

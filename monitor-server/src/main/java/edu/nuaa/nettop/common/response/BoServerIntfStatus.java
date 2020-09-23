@@ -6,65 +6,65 @@ package edu.nuaa.nettop.common.response;
 import java.io.Serializable;
 
 public class BoServerIntfStatus implements Serializable {
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = -7673980574891914040L;
+    /**
+     *
+     */
+    private static final long serialVersionUID = -7673980574891914040L;
 
-	private String mc;   //服务器名称
-	
-	private String dkmc;  //端口名
-	
-	private String ip;   //端口IP
-	
-	private String tp;  //端口流量 
-	
-	private int zt;   //状态
+    private String mc;   //服务器名称
 
-	public String getMc() {
-		return mc;
-	}
+    private String dkmc;  //端口名
 
-	public void setMc(String mc) {
-		this.mc = mc;
-	}
+    private String ip;   //端口IP
 
-	public String getDkmc() {
-		return dkmc;
-	}
+    private Long tp;  //端口流量 kbps
 
-	public void setDkmc(String dkmc) {
-		this.dkmc = dkmc;
-	}
+    private int zt;   //状态
 
-	public String getIp() {
-		return ip;
-	}
+    public String getMc() {
+        return mc;
+    }
 
-	public void setIp(String ip) {
-		this.ip = ip;
-	}
+    public void setMc(String mc) {
+        this.mc = mc;
+    }
 
-	public String getTp() {
-		return tp;
-	}
+    public String getDkmc() {
+        return dkmc;
+    }
 
-	public void setTp(String tp) {
-		this.tp = tp;
-	}
+    public void setDkmc(String dkmc) {
+        this.dkmc = dkmc;
+    }
 
-	public BoServerIntfStatus() {
-		// TODO Auto-generated constructor stub
-	}
+    public String getIp() {
+        return ip;
+    }
 
-	public int getZt() {
-		return zt;
-	}
+    public void setIp(String ip) {
+        this.ip = ip;
+    }
 
-	public void setZt(int zt) {
-		this.zt = zt;
-	}
-	
-	
+    public Long getTp() {
+        return tp;
+    }
+
+    public void setTp(Long tp) {
+        this.tp = tp;
+    }
+
+    public BoServerIntfStatus() {
+        // TODO Auto-generated constructor stub
+    }
+
+    public int getZt() {
+        return zt;
+    }
+
+    public void setZt(int zt) {
+        this.zt = zt;
+    }
+
+
 
 }

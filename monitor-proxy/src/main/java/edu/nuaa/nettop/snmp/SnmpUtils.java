@@ -57,10 +57,21 @@ public class SnmpUtils {
             OID[] columns = new OID[1];
             columns[0] = new VariableBinding(new OID(oid)).getOid();
             List<TableEvent> list = tutils.getTable(target, columns, null, null);
+            boolean flag = false;
+            int i = 0;
+            if (oid.equals(".1.3.6.1.2.1.2.2.1.10")
+                    || oid.equals(".1.3.6.1.2.1.2.2.1.2")
+                    || oid.equals(".1.3.6.1.2.1.2.2.1.8")
+                    || oid.equals(".1.3.6.1.2.1.2.2.1.16"))
+                flag = true;
             for(TableEvent e : list){
                 VariableBinding[] vb = e.getColumns();
                 if(null == vb)continue;
                 result.add(vb[0].getVariable().toString());
+                i++;
+                if (flag && i == 10) {
+                    break;
+                }
 //                System.out.println(vb[0].getVariable().toString());
             }
             snmp.close();

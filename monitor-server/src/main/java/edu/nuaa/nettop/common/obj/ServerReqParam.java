@@ -5,34 +5,34 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ServerReqParam implements Serializable{
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = -39406652689694731L;
+    /**
+     *
+     */
+    private static final long serialVersionUID = -39406652689694731L;
 
-	public ServerReqParam() {
-		// TODO Auto-generated constructor stub
-	}
-	
-	private String wlid;
-	
-	private List<ServerReqObj> sports = new ArrayList<ServerReqObj>();
+    public ServerReqParam() {
+        // TODO Auto-generated constructor stub
+    }
 
-	public String getWlid() {
-		return wlid;
-	}
+    private String wlid;
 
-	public void setWlid(String wlid) {
-		this.wlid = wlid;
-	}
+    private List<ServerReqObj> sports = new ArrayList<ServerReqObj>();
 
-	public List<ServerReqObj> getSports() {
-		return sports;
-	}
+    public String getWlid() {
+        return wlid;
+    }
 
-	public void setSports(List<ServerReqObj> sports) {
-		this.sports = sports;
-	}
+    public void setWlid(String wlid) {
+        this.wlid = wlid;
+    }
+
+    public List<ServerReqObj> getSports() {
+        return sports;
+    }
+
+    public void setSports(List<ServerReqObj> sports) {
+        this.sports = sports;
+    }
 
 
 }

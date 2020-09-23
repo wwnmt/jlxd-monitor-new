@@ -1,6 +1,7 @@
 package edu.nuaa.nettop.service.impl;
 
 import edu.nuaa.nettop.model.ServMem;
+import edu.nuaa.nettop.model.ServPort;
 import edu.nuaa.nettop.service.SnmpService;
 import edu.nuaa.nettop.snmp.SnmpUtils;
 import edu.nuaa.nettop.vo.snmp.SnmpRequest;
@@ -105,6 +106,39 @@ public class SnmpServiceImpl implements SnmpService {
         long end = System.currentTimeMillis();
         log.info("Get MEM times: {} ms", end - start);
         return new ServMem(memTotal, memAvailable, memShared, memBuffer, memCached);
+    }
+
+    /**
+     *  .1.3.6.1.2.1.2.2.1.2 接口名
+     *  .1.3.6.1.2.1.2.2.1.8 接口状态
+     *  .1.3.6.1.2.1.2.2.1.6 MAC地址
+     *  .1.3.6.1.2.1.2.2.1.10 收字节数
+     *  .1.3.6.1.2.1.2.2.1.16 发字节数
+     */
+    @Override
+    public ServPort getServerPort(SnmpRequest request) {
+        ServPort servPort = new ServPort();
+        List<String> portNames, portStatus, portRecvs, portSends, portMACs;
+        portNames = SnmpUtils.walk(".1.3.6.1.2.1.2.2.1.2", request);
+        portMACs = SnmpUtils.walk(".1.3.6.1.2.1.2.2.1.6", request);
+        portStatus = SnmpUtils.walk(".1.3.6.1.2.1.2.2.1.8", request);
+        portRecvs = SnmpUtils.walk(".1.3.6.1.2.1.2.2.1.10", request);
+        portSends = SnmpUtils.walk(".1.3.6.1.2.1.2.2.1.16", request);
+        int size = Math.min(
+                Math.min(portNames.size(), portStatus.size()),
+                Math.min(portRecvs.size(), portSends.size())
+        );
+        for (int i = 0; i < size; i++) {
+            ServPort.Port port = new ServPort.Port();
+            port.setMc(request.getDeviceIp());
+            port.setDkmc(portNames.get(i));
+            port.setIp(portMACs.get(i));
+            port.setZt(portStatus.get(i).equals("1") ? 1 : 0);
+            port.setRecvBytes(portRecvs.get(i));
+            port.setSendBytes(portSends.get(i));
+            servPort.getPorts().add(port);
+        }
+        return servPort;
     }
 
     @Override

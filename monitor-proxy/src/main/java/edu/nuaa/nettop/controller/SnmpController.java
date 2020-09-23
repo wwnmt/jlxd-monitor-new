@@ -1,6 +1,7 @@
 package edu.nuaa.nettop.controller;
 
 import edu.nuaa.nettop.model.ServMem;
+import edu.nuaa.nettop.model.ServPort;
 import edu.nuaa.nettop.service.SnmpService;
 import edu.nuaa.nettop.vo.snmp.SnmpRequest;
 import org.slf4j.Logger;
@@ -73,23 +74,35 @@ public class SnmpController {
     @ResponseBody
     public Long getTcpOut(@PathVariable String deviceIp) {
         log.info("Get {} tcpOut", deviceIp);
-        SnmpRequest snmpModel = new SnmpRequest();
-        snmpModel.setDeviceIp(deviceIp);
-        snmpModel.setCommunityName("public");
-        snmpModel.setPort(161);
-        snmpModel.setVersion(1);
-        return snmpService.getTcpOut(snmpModel);
+        SnmpRequest request = new SnmpRequest();
+        request.setDeviceIp(deviceIp);
+        request.setCommunityName("public");
+        request.setPort(161);
+        request.setVersion(1);
+        return snmpService.getTcpOut(request);
     }
 
     @RequestMapping(value = "udp/out/{deviceIp}", method = RequestMethod.GET)
     @ResponseBody
     public long getUdpOut(@PathVariable String deviceIp) {
         log.info("Get {} udpOut", deviceIp);
-        SnmpRequest snmpModel = new SnmpRequest();
-        snmpModel.setDeviceIp(deviceIp);
-        snmpModel.setCommunityName("public");
-        snmpModel.setPort(161);
-        snmpModel.setVersion(1);
-        return snmpService.getUdpOut(snmpModel);
+        SnmpRequest request = new SnmpRequest();
+        request.setDeviceIp(deviceIp);
+        request.setCommunityName("public");
+        request.setPort(161);
+        request.setVersion(1);
+        return snmpService.getUdpOut(request);
+    }
+
+    @RequestMapping(value = "serv/port/{deviceIp}", method = RequestMethod.GET)
+    @ResponseBody
+    public ServPort getServPort(@PathVariable String deviceIp) {
+        log.info("Get {} server port", deviceIp);
+        SnmpRequest request = new SnmpRequest();
+        request.setDeviceIp(deviceIp);
+        request.setCommunityName("public");
+        request.setPort(161);
+        request.setVersion(1);
+        return snmpService.getServerPort(request);
     }
 }

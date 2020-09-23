@@ -3,6 +3,7 @@ package edu.nuaa.nettop.common.utils;
 import edu.nuaa.nettop.common.exception.MonitorException;
 import edu.nuaa.nettop.model.LxdStatus;
 import edu.nuaa.nettop.model.ServMem;
+import edu.nuaa.nettop.model.ServPort;
 import edu.nuaa.nettop.vo.lxd.LxdRequest;
 import edu.nuaa.nettop.vo.lxd.LxdResponse;
 import lombok.extern.slf4j.Slf4j;
@@ -71,6 +72,15 @@ public class ProxyUtil {
         params.put("deviceIp", deviceIp);
         String url = "http://" + serverIp + ":2081/snmp/mem/all/{deviceIp}";
         ResponseEntity<ServMem> responseEntity = restTemplate.getForEntity(url, ServMem.class, params);
+        return responseEntity.getBody();
+    }
+
+    public static ServPort getServPort(String serverIp, String deviceIp) {
+        RestTemplate restTemplate = new RestTemplate();
+        Map<String, Object> params = new HashMap<>();
+        params.put("deviceIp", deviceIp);
+        String url = "http://" + serverIp + ":2081/snmp/serv/port/{deviceIp}";
+        ResponseEntity<ServPort> responseEntity = restTemplate.getForEntity(url, ServPort.class, params);
         return responseEntity.getBody();
     }
 

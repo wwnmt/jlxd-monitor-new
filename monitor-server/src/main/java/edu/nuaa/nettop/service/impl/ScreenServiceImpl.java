@@ -222,5 +222,7 @@ public class ScreenServiceImpl implements ScreenService {
         taskScheduler.deleteTask(jobName, jobGroup);
         //清空redis缓存数据
         CommonUtils.delInRedis(jobName+"ddostm");
+        CommonUtils.delInRedis(jobName+"vrtm");
+        CommonUtils.delInRedis(jobName+"perftm");
     }
 }
