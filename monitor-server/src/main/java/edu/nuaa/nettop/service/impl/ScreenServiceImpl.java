@@ -1,21 +1,27 @@
 package edu.nuaa.nettop.service.impl;
 
 import com.alibaba.fastjson.JSON;
+import edu.nuaa.nettop.common.constant.Constants;
 import edu.nuaa.nettop.common.constant.TaskType;
 import edu.nuaa.nettop.common.exception.MonitorException;
-import edu.nuaa.nettop.common.model.Link;
+import edu.nuaa.nettop.common.obj.NetPortObj;
+import edu.nuaa.nettop.common.obj.ServerObj;
 import edu.nuaa.nettop.common.utils.CommonUtils;
+import edu.nuaa.nettop.common.utils.ProxyUtil;
 import edu.nuaa.nettop.dao.go.DeployDOMapper;
 import edu.nuaa.nettop.dao.go.ServerDOMapper;
 import edu.nuaa.nettop.dao.main.DDosTdDOMapper;
 import edu.nuaa.nettop.dao.main.LinkDOMapper;
 import edu.nuaa.nettop.dao.main.NodeDOMapper;
+import edu.nuaa.nettop.dao.main.PhysicalDevDOMapper;
 import edu.nuaa.nettop.dao.main.PortDOMapper;
 import edu.nuaa.nettop.dao.main.ServiceNetDOMapper;
 import edu.nuaa.nettop.dao.main.TaskDOMapper;
 import edu.nuaa.nettop.entity.DDosTaskDO;
 import edu.nuaa.nettop.entity.LinkDO;
+import edu.nuaa.nettop.entity.PhysicalDevDO;
 import edu.nuaa.nettop.entity.TaskForDDosDO;
+import edu.nuaa.nettop.model.ServPort;
 import edu.nuaa.nettop.quartz.TaskScheduler;
 import edu.nuaa.nettop.service.ScreenService;
 import edu.nuaa.nettop.task.DDosScreenTask;
@@ -32,6 +38,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -54,9 +61,10 @@ public class ScreenServiceImpl implements ScreenService {
     private final ServerDOMapper serverDOMapper;
     private final LinkDOMapper linkDOMapper;
     private final PortDOMapper portDOMapper;
+    private final PhysicalDevDOMapper physicalDevDOMapper;
 
     @Autowired
-    public ScreenServiceImpl(TaskScheduler taskScheduler, TaskDOMapper taskDOMapper, DeployDOMapper deployDOMapper, ServiceNetDOMapper serviceNetDOMapper, NodeDOMapper nodeDOMapper, DDosTdDOMapper dDosTdDOMapper, ServerDOMapper serverDOMapper, LinkDOMapper linkDOMapper, PortDOMapper portDOMapper) {
+    public ScreenServiceImpl(TaskScheduler taskScheduler, TaskDOMapper taskDOMapper, DeployDOMapper deployDOMapper, ServiceNetDOMapper serviceNetDOMapper, NodeDOMapper nodeDOMapper, DDosTdDOMapper dDosTdDOMapper, ServerDOMapper serverDOMapper, LinkDOMapper linkDOMapper, PortDOMapper portDOMapper, PhysicalDevDOMapper physicalDevDOMapper) {
         this.taskScheduler = taskScheduler;
         this.taskDOMapper = taskDOMapper;
         this.deployDOMapper = deployDOMapper;
@@ -66,6 +74,7 @@ public class ScreenServiceImpl implements ScreenService {
         this.serverDOMapper = serverDOMapper;
         this.linkDOMapper = linkDOMapper;
         this.portDOMapper = portDOMapper;
+        this.physicalDevDOMapper = physicalDevDOMapper;
     }
 
     @Override
@@ -138,7 +147,28 @@ public class ScreenServiceImpl implements ScreenService {
         List<String> serverIps = serverDOMapper.listServerIp();
         request.setServerIps(serverIps);
         //读取链路信息
-
+        List<LinkDO> linkDOList = linkDOMapper.findByWlid(wlid);
+        Map<String, String> linkInfoMap = linkDOList.stream().collect(Collectors.toMap(
+                LinkDO::getLlid, LinkDO::getLlbs
+        ));
+        request.setLinkInfoMap(linkInfoMap);
+        //读取链路带宽
+        Map<String, Integer> linkBandwidthMap = linkDOList.stream().collect(Collectors.toMap(
+                LinkDO::getLlid, LinkDO::getDk
+        ));
+        request.setLinkBandwidthMap(linkBandwidthMap);
+        //读取路由器名称
+        String sbid;
+        String pre = serviceNetDOMapper.getYxidByPrimaryKey(wlid);
+        if (Constants.perfDevMap.containsKey(wlid)) {
+            sbid = Constants.perfDevMap.get(wlid);
+        } else {
+            sbid = nodeDOMapper.findNodeByWlid(wlid).get(0).getSbmc();
+        }
+        String devName = nodeDOMapper.findNodeNameByPrimaryKey(sbid);
+        String serverIp = deployDOMapper.queryServerIpByDeviceName(pre + devName);
+        request.setRouterName(pre + devName);
+        request.setRouterDeployServer(serverIp);
         return request;
     }
 
@@ -204,7 +234,10 @@ public class ScreenServiceImpl implements ScreenService {
             JobDataMap jobDataMap = new JobDataMap();
             jobDataMap.put("wlid", request.getWlid());
             jobDataMap.put("servers", request.getServerIps());
-//            jobDataMap.put("links", JSON.toJSONString(request.getLinks()));
+            jobDataMap.put("links", request.getLinkInfoMap());
+            jobDataMap.put("bandwidth", request.getLinkBandwidthMap());
+            jobDataMap.put("router", request.getRouterName());
+            jobDataMap.put("ip", request.getRouterDeployServer());
             //提交任务
             taskScheduler.publishJob(jobName, jobGroup, jobDataMap, 5, PerfScreenTask.class);
         } catch (SchedulerException e) {
@@ -224,5 +257,26 @@ public class ScreenServiceImpl implements ScreenService {
         CommonUtils.delInRedis(jobName+"ddostm");
         CommonUtils.delInRedis(jobName+"vrtm");
         CommonUtils.delInRedis(jobName+"perftm");
+    }
+
+    @Override
+    public ServerObj getPhysicalInterfaceInfo(String wlid, String sbid) throws MonitorException {
+        PhysicalDevDO physicalDevDO = physicalDevDOMapper.selectByPrimaryKey(sbid);
+        String pre = serviceNetDOMapper.getYxidByPrimaryKey(wlid);
+        String serverIp = deployDOMapper.queryServerIpByDeviceName(
+                pre + nodeDOMapper.findNodeNameByPrimaryKey(sbid));
+        String physicalIntName = physicalDevDO.getLjsb();
+        ServPort servPort = ProxyUtil.getServPort(serverIp, serverIp);
+        for (ServPort.Port port : servPort.getPorts()) {
+            if (port.getDkmc().equals(physicalIntName)) {
+                ServerObj serverObj = new ServerObj();
+                NetPortObj portObj = new NetPortObj();
+                portObj.setIp(port.getIp());
+                portObj.setMc(port.getDkmc());
+                serverObj.setPort(portObj);
+                return serverObj;
+            }
+        }
+        return null;
     }
 }

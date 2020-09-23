@@ -1,6 +1,7 @@
 package edu.nuaa.nettop.service;
 
 import edu.nuaa.nettop.common.exception.MonitorException;
+import edu.nuaa.nettop.common.obj.ServerObj;
 import edu.nuaa.nettop.vo.DDosScreenRequest;
 import edu.nuaa.nettop.vo.PerfScreenRequest;
 import edu.nuaa.nettop.vo.VrScreenRequest;
@@ -29,4 +30,6 @@ public interface ScreenService {
     void cancelScreen(String jobName, String jobGroup) throws MonitorException;
 
     void deleteScreen(String jobName, String jobGroup) throws MonitorException;
+
+    ServerObj getPhysicalInterfaceInfo(String wlid, String sbid) throws MonitorException;
 }

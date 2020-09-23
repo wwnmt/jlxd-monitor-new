@@ -212,22 +212,5 @@ public class MonitorServiceImpl implements MonitorService {
         CommonUtils.delInRedis(jobName+"tm");
     }
 
-    @Override
-    public ServerObj getPhysicalInterfaceInfo(String wlid, String sbid) throws MonitorException {
-        PhysicalDevDO physicalDevDO = physicalDevDOMapper.selectByPrimaryKey(sbid);
-        String serverIp = deployDOMapper.queryServerIpByDeviceName(nodeDOMapper.findNodeNameByPrimaryKey(sbid));
-        String physicalIntName = physicalDevDO.getLjsb();
-        ServPort servPort = ProxyUtil.getServPort(serverIp, serverIp);
-        for (ServPort.Port port : servPort.getPorts()) {
-            if (port.getDkmc().equals(physicalIntName)) {
-                ServerObj serverObj = new ServerObj();
-                NetPortObj portObj = new NetPortObj();
-                portObj.setIp(port.getIp());
-                portObj.setMc(port.getDkmc());
-                serverObj.setPort(portObj);
-                return serverObj;
-            }
-        }
-        return null;
-    }
+
 }

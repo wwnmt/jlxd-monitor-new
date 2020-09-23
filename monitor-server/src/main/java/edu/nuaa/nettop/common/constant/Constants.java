@@ -22,4 +22,8 @@ public final class Constants {
 
     //Vr监控端口
     public static final Map<String, List<ServerReqObj>> servIntfMap = new ConcurrentHashMap<>();
+
+    //Perf路由器监控集合
+    //key:wlid value:sbid
+    public static final Map<String, String> perfDevMap = new ConcurrentHashMap<>();
 }

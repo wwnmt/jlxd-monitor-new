@@ -26,5 +26,5 @@ public interface MonitorService {
 
     void deleteTask(String jobName, String jobGroup) throws MonitorException;
 
-    ServerObj getPhysicalInterfaceInfo(String wlid, String sbid) throws MonitorException;
+
 }

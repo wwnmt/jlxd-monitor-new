@@ -63,7 +63,7 @@ quartz:
     is-clustered: false
   thread-pool:
     class: org.quartz.simpl.SimpleThreadPool
-    thread-count: 10
+    thread-count: 30
   datasource:
     quartzDataSource:
       driver: com.mysql.cj.jdbc.Driver

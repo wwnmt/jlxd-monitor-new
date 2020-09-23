@@ -24,11 +24,13 @@ public class BoPerfOptScreenStatus implements Serializable {
 
     private long tm;    //时序间隔
 
-    private List<BoServerStatus> routers = new ArrayList<>();   //集群中各被显示路由器的资源监控数据
+    //private List<BoServerStatus> routers = new ArrayList<BoServerStatus>();   //集群中各被显示路由器的资源监控数据
 
     private BoNetServStatus sevstatus;   //集群服务器的总体资源利用率
 
     private List<BoLinkStatus> links = new ArrayList<>();   //链路流量吞吐量 topN
-    
+
     private List<BoLinkLrbStatus> rlinks = new ArrayList<>();   //链路容量与流量大小比值的前10位的柱状图
+
+    private BoDevStatus routerstatus; //路由器信息
 }

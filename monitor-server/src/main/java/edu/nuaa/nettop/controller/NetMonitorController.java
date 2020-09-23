@@ -124,9 +124,18 @@ public class NetMonitorController {
         return new Response("ok");
     }
 
+    @GetMapping("perfopt/monitorrouter/{wlid}/{sbid}")
+    @ResponseBody
+    public Response adddev(@PathVariable("wlid") String wlid,
+                           @PathVariable String sbid) throws MonitorException {
+        Constants.perfDevMap.put(wlid, sbid);
+        return new Response("ok");
+    }
+
     @GetMapping("/virtreal/getserver/{wlid}/{sbid}")
     @ResponseBody
-    public ServerObj getServer(@PathVariable("wlid") String wlid, @PathVariable String sbid) throws MonitorException {
-        return monitorService.getPhysicalInterfaceInfo(wlid, sbid);
+    public ServerObj getServer(@PathVariable("wlid") String wlid,
+                               @PathVariable String sbid) throws MonitorException {
+        return screenService.getPhysicalInterfaceInfo(wlid, sbid);
     }
 }

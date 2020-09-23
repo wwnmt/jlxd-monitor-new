@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created with IntelliJ IDEA.
@@ -24,5 +25,11 @@ public class PerfScreenRequest {
 
     private List<String> serverIps = new ArrayList<>();
 
-    private List<Link> links = new ArrayList<>();
+    private Map<String, String> linkInfoMap;
+
+    private Map<String, Integer> linkBandwidthMap;
+
+    private String routerName;
+
+    private String routerDeployServer;
 }
