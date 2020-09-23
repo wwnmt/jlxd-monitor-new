@@ -5,6 +5,7 @@ import edu.nuaa.nettop.common.constant.TaskType;
 import edu.nuaa.nettop.common.exception.MonitorException;
 import edu.nuaa.nettop.common.model.Link;
 import edu.nuaa.nettop.common.model.Node;
+import edu.nuaa.nettop.common.utils.CommonUtils;
 import edu.nuaa.nettop.dao.go.DeployDOMapper;
 import edu.nuaa.nettop.dao.main.LinkDOMapper;
 import edu.nuaa.nettop.dao.main.NodeDOMapper;
@@ -204,5 +205,6 @@ public class MonitorServiceImpl implements MonitorService {
         taskScheduler.deleteTask(jobName, jobGroup);
         //删除redis数据
         //TODO
+        CommonUtils.delInRedis(jobName+"tm");
     }
 }

@@ -49,6 +49,10 @@ public class CommonUtils {
         return redisTemplate.opsForValue().get(k);
     }
 
+    public static void delInRedis(String k) {
+        redisTemplate.delete(k);
+    }
+
     private static RedisTemplate<String, String> initRedisTemplate() {
         RedisTemplate<String, String> redisTemplate = new RedisTemplate<>();
         RedisSerializer<String> redisSerializer = redisTemplate.getStringSerializer();

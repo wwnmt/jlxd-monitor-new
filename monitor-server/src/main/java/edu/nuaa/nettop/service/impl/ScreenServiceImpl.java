@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSON;
 import edu.nuaa.nettop.common.constant.TaskType;
 import edu.nuaa.nettop.common.exception.MonitorException;
 import edu.nuaa.nettop.common.model.Link;
+import edu.nuaa.nettop.common.utils.CommonUtils;
 import edu.nuaa.nettop.dao.go.DeployDOMapper;
 import edu.nuaa.nettop.dao.go.ServerDOMapper;
 import edu.nuaa.nettop.dao.main.DDosTdDOMapper;
@@ -220,5 +221,6 @@ public class ScreenServiceImpl implements ScreenService {
     public void deleteScreen(String jobName, String jobGroup) throws MonitorException {
         taskScheduler.deleteTask(jobName, jobGroup);
         //清空redis缓存数据
+        CommonUtils.delInRedis(jobName+"ddostm");
     }
 }

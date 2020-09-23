@@ -1,5 +1,6 @@
 package edu.nuaa.nettop.controller;
 
+import edu.nuaa.nettop.model.ServMem;
 import edu.nuaa.nettop.service.SnmpService;
 import edu.nuaa.nettop.vo.snmp.SnmpRequest;
 import org.slf4j.Logger;
@@ -36,24 +37,36 @@ public class SnmpController {
     @ResponseBody
     public String getCpu(@PathVariable String deviceIp) {
         log.info("Get {} cpu", deviceIp);
-        SnmpRequest snmpModel = new SnmpRequest();
-        snmpModel.setDeviceIp(deviceIp);
-        snmpModel.setCommunityName("public");
-        snmpModel.setPort(161);
-        snmpModel.setVersion(1);
-        return snmpService.getServerCpuUtilization(snmpModel);
+        SnmpRequest request = new SnmpRequest();
+        request.setDeviceIp(deviceIp);
+        request.setCommunityName("public");
+        request.setPort(161);
+        request.setVersion(1);
+        return snmpService.getServerCpuUtilization(request);
     }
 
     @RequestMapping(value = "mem/{deviceIp}", method = RequestMethod.GET)
     @ResponseBody
     public String getMem(@PathVariable String deviceIp) {
         log.info("Get {} memory", deviceIp);
-        SnmpRequest snmpModel = new SnmpRequest();
-        snmpModel.setDeviceIp(deviceIp);
-        snmpModel.setCommunityName("public");
-        snmpModel.setPort(161);
-        snmpModel.setVersion(1);
-        return snmpService.getServerMemoryUtilization(snmpModel);
+        SnmpRequest request = new SnmpRequest();
+        request.setDeviceIp(deviceIp);
+        request.setCommunityName("public");
+        request.setPort(161);
+        request.setVersion(1);
+        return snmpService.getServerMemoryUtilization(request);
+    }
+
+    @RequestMapping(value = "mem/all/{deviceIp}", method = RequestMethod.GET)
+    @ResponseBody
+    public ServMem getAllMem(@PathVariable String deviceIp) {
+        log.info("Get {} all memory", deviceIp);
+        SnmpRequest request = new SnmpRequest();
+        request.setDeviceIp(deviceIp);
+        request.setCommunityName("public");
+        request.setPort(161);
+        request.setVersion(1);
+        return snmpService.getServerAllMem(request);
     }
 
     @RequestMapping(value = "tcp/out/{deviceIp}", method = RequestMethod.GET)

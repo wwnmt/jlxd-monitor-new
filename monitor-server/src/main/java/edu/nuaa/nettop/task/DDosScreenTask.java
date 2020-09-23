@@ -96,6 +96,16 @@ public class DDosScreenTask implements Job {
         }
         ddosScreenStatus.setLinks(linkStatuses);
         log.debug("links times: {}", System.currentTimeMillis() - start);
+        //set TM
+        String tmString;
+        if ((tmString = CommonUtils.getFromRedis(wlid+"ddostm")) == null) {
+            CommonUtils.storeToRedis(wlid+"ddostm", "5");
+            ddosScreenStatus.setTm(0);
+        } else {
+            int tm = Integer.parseInt(tmString);
+            ddosScreenStatus.setTm(tm);
+            CommonUtils.storeToRedis(wlid+"ddostm", String.valueOf(tm+5));
+        }
         log.info("Create data-> {}", JSON.toJSONString(ddosScreenStatus));
         sendToWeb(ddosScreenStatus);
     }
