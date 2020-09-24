@@ -1,6 +1,5 @@
 package edu.nuaa.nettop.vo;
 
-import edu.nuaa.nettop.common.model.Link;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

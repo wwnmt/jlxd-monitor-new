@@ -1,13 +1,11 @@
 package edu.nuaa.nettop.common.utils;
 
 import edu.nuaa.nettop.common.exception.MonitorException;
-import edu.nuaa.nettop.model.LxdStatus;
 import edu.nuaa.nettop.model.ServMem;
 import edu.nuaa.nettop.model.ServPort;
 import edu.nuaa.nettop.vo.lxd.LxdRequest;
 import edu.nuaa.nettop.vo.lxd.LxdResponse;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -15,7 +13,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 /**

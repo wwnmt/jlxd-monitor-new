@@ -1,7 +1,6 @@
 package edu.nuaa.nettop.common.response;
 
 
-
 import edu.nuaa.nettop.common.obj.PortStatusObj;
 
 import java.io.Serializable;

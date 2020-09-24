@@ -24,7 +24,7 @@ public class ServPort {
     @Data
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class Port{
+    public static class Port {
         private String mc;   //服务器名称
 
         private String dkmc;  //端口名

@@ -61,7 +61,7 @@ public class TaskScheduler {
                 scheduler.pauseTrigger(triggerKey); //停止触发器
                 scheduler.unscheduleJob(triggerKey); //移除触发器
             }
-            log.info("Delete {} Task-> {}",jobGroup, jobName);
+            log.info("Delete {} Task-> {}", jobGroup, jobName);
         } catch (SchedulerException e) {
             throw new MonitorException(e.getMessage());
         }
@@ -72,8 +72,8 @@ public class TaskScheduler {
      */
     @Transactional(rollbackFor = MonitorException.class)
     public void publishJob(String jobName, String jobGroup,
-                                  JobDataMap jobDataMap, int timeout,
-                                  Class<? extends Job> clazz) throws MonitorException {
+                           JobDataMap jobDataMap, int timeout,
+                           Class<? extends Job> clazz) throws MonitorException {
         try {
             //设置名称与组别
             JobDetail jobDetail = JobBuilder
@@ -92,7 +92,7 @@ public class TaskScheduler {
                     .build();
             //提交任务
             scheduler.scheduleJob(jobDetail, trigger);
-            log.info("Publish '{}' Task-> {}",jobGroup, jobName);
+            log.info("Publish '{}' Task-> {}", jobGroup, jobName);
         } catch (SchedulerException e) {
             throw new MonitorException(e.getMessage());
         }

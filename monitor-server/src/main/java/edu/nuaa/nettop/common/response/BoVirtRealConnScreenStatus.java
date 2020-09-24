@@ -26,7 +26,7 @@ public class BoVirtRealConnScreenStatus implements Serializable {
 
     private BoNetServStatus sevstatus;   //集群服务器的总体资源利用率
 
-    private List<BoServerIntfStatus> topsdks = new ArrayList<>();   //服务器活跃网络接口的流量前n位
-    
-    private List<BoServerIntfStatus> sdks = new ArrayList<>();   //被监测服务器接口流量信息
+    private List<BoServerIntfStatus> topsdks = new ArrayList<>();   //服务器活跃网络接口的流量前5位
+
+    private List<BoServerIntfStatus> sdks = new ArrayList<>();   //被监测服务器接口流量信息 3
 }

@@ -1,23 +1,25 @@
 package edu.nuaa.nettop.controller;
 
+import com.alibaba.fastjson.JSON;
 import edu.nuaa.nettop.common.constant.Constants;
 import edu.nuaa.nettop.common.constant.TaskType;
 import edu.nuaa.nettop.common.exception.MonitorException;
 import edu.nuaa.nettop.common.obj.ServerObj;
 import edu.nuaa.nettop.common.obj.ServerReqObj;
 import edu.nuaa.nettop.common.obj.ServerReqParam;
+import edu.nuaa.nettop.common.response.Response;
 import edu.nuaa.nettop.common.utils.CommonUtils;
 import edu.nuaa.nettop.service.MonitorService;
 import edu.nuaa.nettop.service.ScreenService;
 import edu.nuaa.nettop.vo.DDosScreenRequest;
 import edu.nuaa.nettop.vo.NetRequest;
 import edu.nuaa.nettop.vo.PerfScreenRequest;
-import edu.nuaa.nettop.common.response.Response;
 import edu.nuaa.nettop.vo.VrScreenRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -45,6 +47,12 @@ public class NetMonitorController {
     public NetMonitorController(MonitorService monitorService, ScreenService screenService) {
         this.monitorService = monitorService;
         this.screenService = screenService;
+    }
+
+    @GetMapping("/test")
+    @ResponseBody
+    public Response test() throws MonitorException {
+        return new Response("ok");
     }
 
     @GetMapping("/start/{wlid}")
@@ -97,20 +105,23 @@ public class NetMonitorController {
         return new Response("ok");
     }
 
-    @GetMapping("/virtreal/monitorserver")
+    @PostMapping("/virtreal/monitorserver")
     @ResponseBody
     public Response addIntf(@RequestBody ServerReqParam param) throws MonitorException {
         String wlid = param.getWlid();
         List<ServerReqObj> serverReqObjs = CommonUtils.getOrCreate(wlid,
-                                                   Constants.servIntfMap,
-                                                   ArrayList::new);
+                                                                   Constants.servIntfMap,
+                                                                   ArrayList::new);
+        serverReqObjs.clear();
         serverReqObjs.addAll(param.getSports());
+        log.info("Recv new vr port->{}", JSON.toJSONString(serverReqObjs));
         return new Response("ok");
     }
 
     @GetMapping("/screen/perfopt/start/{wlid}")
     @ResponseBody
     public Response runPerfScreen(@PathVariable("wlid") String wlid) throws MonitorException {
+        log.info("Recv perf screen-> {}", wlid);
         PerfScreenRequest request = screenService.createPerfScreen(wlid);
         screenService.addPerformanceScreen(request);
         return new Response("ok");
@@ -129,6 +140,8 @@ public class NetMonitorController {
     public Response adddev(@PathVariable("wlid") String wlid,
                            @PathVariable String sbid) throws MonitorException {
         Constants.perfDevMap.put(wlid, sbid);
+        cancelPerfScreen(wlid);
+        runPerfScreen(wlid);
         return new Response("ok");
     }
 
@@ -136,6 +149,9 @@ public class NetMonitorController {
     @ResponseBody
     public ServerObj getServer(@PathVariable("wlid") String wlid,
                                @PathVariable String sbid) throws MonitorException {
-        return screenService.getPhysicalInterfaceInfo(wlid, sbid);
+        log.info("Recv getServer-> {}-{}", wlid, sbid);
+        ServerObj serverObj = screenService.getPhysicalInterfaceInfo(wlid, sbid);
+        log.info("getServer data-> {}", JSON.toJSONString(serverObj));
+        return serverObj;
     }
 }

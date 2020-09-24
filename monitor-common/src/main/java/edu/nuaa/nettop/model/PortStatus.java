@@ -1,7 +1,6 @@
 package edu.nuaa.nettop.model;
 
 import lombok.Data;
-import lombok.ToString;
 
 import java.io.Serializable;
 

@@ -71,7 +71,7 @@ public class LxdMonitorHandle
                 lxdStatus.setName(lxdName);
                 String result = getContainerState(lxdName);
                 JSONObject lxdStateJson = JSONObject.parseObject(result);
-                if (lxdStateJson.get("type").equals("error")){
+                if (lxdStateJson.get("type").equals("error")) {
                     lxdStatus.setStatus(0);
                     lxdStatusSet.add(lxdStatus);
                     log.info("Fail to get {} status data failed", lxdName);
@@ -108,8 +108,9 @@ public class LxdMonitorHandle
                 JSONObject network = metadata.getJSONObject("network");
                 for (Map.Entry<String, Object> entry : network.entrySet()) {
                     String interfaceName = entry.getKey();
-                    if (interfaceName.contains("manage"))
+                    if (interfaceName.contains("manage")) {
                         continue;
+                    }
                     JSONObject interfaceJson = (JSONObject) entry.getValue();
                     JSONObject counters = interfaceJson.getJSONObject("counters");
 

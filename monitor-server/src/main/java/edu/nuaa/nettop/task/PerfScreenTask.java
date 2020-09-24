@@ -1,7 +1,6 @@
 package edu.nuaa.nettop.task;
 
 import com.alibaba.fastjson.JSON;
-import edu.nuaa.nettop.common.constant.Constants;
 import edu.nuaa.nettop.common.exception.MonitorException;
 import edu.nuaa.nettop.common.obj.DevStatusObj;
 import edu.nuaa.nettop.common.obj.LinkStatusObj;
@@ -12,7 +11,6 @@ import edu.nuaa.nettop.common.response.BoLinkStatus;
 import edu.nuaa.nettop.common.response.BoNetServStatus;
 import edu.nuaa.nettop.common.response.BoPerfOptScreenStatus;
 import edu.nuaa.nettop.common.response.BoRestResObj;
-import edu.nuaa.nettop.common.response.BoVirtRealConnScreenStatus;
 import edu.nuaa.nettop.common.utils.CommonUtils;
 import edu.nuaa.nettop.common.utils.ProxyUtil;
 import edu.nuaa.nettop.config.StaticConfig;
@@ -56,7 +54,6 @@ public class PerfScreenTask implements Job {
 
     @Override
     public void execute(JobExecutionContext jobExecutionContext) throws JobExecutionException {
-        log.info("Run Perf screen task");
         //设置参数
         BoPerfOptScreenStatus screenStatus = new BoPerfOptScreenStatus();
         JobDataMap jobDataMap = jobExecutionContext.getJobDetail().getJobDataMap();
@@ -66,6 +63,9 @@ public class PerfScreenTask implements Job {
         linkBandwidthMap = (Map<String, Integer>) jobDataMap.get("bandwidth");
         routerName = jobDataMap.getString("router");
         serverIp = jobDataMap.getString("ip");
+        serverIps.remove("192.168.31.12");
+        log.info("Run Perf screen task-> {}", wlid);
+        screenStatus.setWlid(wlid);
         //服务器总体资源利用率
         setServerData(screenStatus, serverIps);
         //路由器资源监控
@@ -106,7 +106,7 @@ public class PerfScreenTask implements Job {
                 devStatusObj.setMem(lxdStatus.getMemUsage());
                 devStatusObj.setDk(lxdStatus.getDiskUsage());
                 //读取redis数据
-                String cache = CommonUtils.getFromRedis(wlid+routerName);
+                String cache = CommonUtils.getFromRedis(wlid + routerName);
                 if (cache == null || cache.equals("")) {
                     devStatusObj.setCpu(0);
                 } else {
@@ -121,7 +121,7 @@ public class PerfScreenTask implements Job {
                 }
             }
             //存入redis
-            CommonUtils.storeToRedis(wlid+routerName, String.valueOf(lxdStatus.getCpuTime()));
+            CommonUtils.storeToRedis(wlid + routerName, String.valueOf(lxdStatus.getCpuTime()));
             List<PortStatusObj> ports = lxdStatus.getInterfaceList().stream().map(portModel -> {
                 PortStatusObj port = new PortStatusObj();
                 port.setNm(portModel.getName());
@@ -139,13 +139,13 @@ public class PerfScreenTask implements Job {
 
     private void setTm(String wlid, BoPerfOptScreenStatus screenStatus) {
         String tmString;
-        if ((tmString = CommonUtils.getFromRedis(wlid+"perftm")) == null) {
-            CommonUtils.storeToRedis(wlid+"perftm", "5");
+        if ((tmString = CommonUtils.getFromRedis(wlid + "perftm")) == null) {
+            CommonUtils.storeToRedis(wlid + "perftm", "5");
             screenStatus.setTm(0);
         } else {
             int tm = Integer.parseInt(tmString);
             screenStatus.setTm(tm);
-            CommonUtils.storeToRedis(wlid+"perftm", String.valueOf(tm+5));
+            CommonUtils.storeToRedis(wlid + "perftm", String.valueOf(tm + 5));
         }
     }
 
@@ -163,7 +163,7 @@ public class PerfScreenTask implements Job {
             boLinkStatus.setId(linkStatusObjList.get(i).getId());
             boLinkStatus.setMc(linkInfoMap.get(boLinkStatus.getId()));
             boLinkStatus.setSt((byte) 1);
-            boLinkStatus.setTp(String.valueOf(linkStatusObjList.get(length-1).getTp()));
+            boLinkStatus.setTp(String.valueOf(linkStatusObjList.get(length - 1).getTp()));
             linkStatuses.add(boLinkStatus);
             length--;
         }
@@ -206,12 +206,13 @@ public class PerfScreenTask implements Job {
         //mem usage
         long memTotalUsed = 0L;
         for (ServMem mem : memMap.values()) {
-            if (mem.getShared() + mem.getBuffer() + mem.getCache() > mem.getTotal())
+            if (mem.getShared() + mem.getBuffer() + mem.getCache() > mem.getTotal()) {
                 memTotalUsed += mem.getTotal() - mem.getAvail() - mem.getBuffer() - mem.getCache() + mem.getShared();
-            else
+            } else {
                 memTotalUsed += mem.getTotal() - mem.getAvail() - mem.getBuffer() - mem.getCache();
+            }
         }
-        servStatus.setMem(memTotalUsed >> 20);
+        servStatus.setMem(memTotalUsed >> 20); //GB
         servStatus.setMeml((double) memTotalUsed / memTotal);
         status.setSevstatus(servStatus);
     }

@@ -46,7 +46,7 @@ public class NodeMonitorTask implements Job {
     public void execute(JobExecutionContext jobExecutionContext) throws JobExecutionException {
         //读取参数
         JobDataMap jobDataMap = jobExecutionContext.getJobDetail().getJobDataMap();
-        String wlid =  jobDataMap.getString("wlid");
+        String wlid = jobDataMap.getString("wlid");
         sbid = jobDataMap.getString("sbid");
         String nodeName = jobDataMap.getString("nodeName");
         String serverIp = jobDataMap.getString("serverIp");
@@ -136,13 +136,13 @@ public class NodeMonitorTask implements Job {
         }).collect(Collectors.toList());
         devStatusObj.setPorts(ports);
         String tmString;
-        if ((tmString = CommonUtils.getFromRedis(sbid+"tm")) == null) {
-            CommonUtils.storeToRedis(sbid+"tm", "5");
+        if ((tmString = CommonUtils.getFromRedis(sbid + "tm")) == null) {
+            CommonUtils.storeToRedis(sbid + "tm", "5");
             devStatusObj.setTm(0);
         } else {
             int tm = Integer.parseInt(tmString);
             devStatusObj.setTm(tm);
-            CommonUtils.storeToRedis(sbid+"tm", String.valueOf(tm+5));
+            CommonUtils.storeToRedis(sbid + "tm", String.valueOf(tm + 5));
         }
         return new BoDevStatus(devStatusObj);
     }

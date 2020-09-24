@@ -31,7 +31,7 @@ public class SnmpUtils {
     /**
      * 获取指定OID对应的table值
      */
-    public static List<String> walk(String oid, SnmpRequest snmpModel){
+    public static List<String> walk(String oid, SnmpRequest snmpModel) {
         Snmp snmp = null;
         PDU pdu;
         CommunityTarget target;
@@ -49,7 +49,7 @@ public class SnmpUtils {
             target = new CommunityTarget();
             target.setCommunity(new OctetString(communityName));
             target.setVersion(version);
-            target.setAddress(new UdpAddress(hostIp+"/"+port));
+            target.setAddress(new UdpAddress(hostIp + "/" + port));
             target.setTimeout(1000);
             target.setRetries(1);
 
@@ -62,11 +62,14 @@ public class SnmpUtils {
             if (oid.equals(".1.3.6.1.2.1.2.2.1.10")
                     || oid.equals(".1.3.6.1.2.1.2.2.1.2")
                     || oid.equals(".1.3.6.1.2.1.2.2.1.8")
-                    || oid.equals(".1.3.6.1.2.1.2.2.1.16"))
+                    || oid.equals(".1.3.6.1.2.1.2.2.1.16")) {
                 flag = true;
-            for(TableEvent e : list){
+            }
+            for (TableEvent e : list) {
                 VariableBinding[] vb = e.getColumns();
-                if(null == vb)continue;
+                if (null == vb) {
+                    continue;
+                }
                 result.add(vb[0].getVariable().toString());
                 i++;
                 if (flag && i == 10) {
@@ -77,10 +80,9 @@ public class SnmpUtils {
             snmp.close();
         } catch (IOException e) {
             e.printStackTrace();
-        }finally{
+        } finally {
             try {
-                if(snmp != null)
-                {
+                if (snmp != null) {
                     snmp.close();
                 }
             } catch (IOException e) {

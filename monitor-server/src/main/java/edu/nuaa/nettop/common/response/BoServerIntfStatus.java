@@ -21,6 +21,10 @@ public class BoServerIntfStatus implements Serializable {
 
     private int zt;   //状态
 
+    public BoServerIntfStatus() {
+        // TODO Auto-generated constructor stub
+    }
+
     public String getMc() {
         return mc;
     }
@@ -53,10 +57,6 @@ public class BoServerIntfStatus implements Serializable {
         this.tp = tp;
     }
 
-    public BoServerIntfStatus() {
-        // TODO Auto-generated constructor stub
-    }
-
     public int getZt() {
         return zt;
     }
@@ -64,7 +64,6 @@ public class BoServerIntfStatus implements Serializable {
     public void setZt(int zt) {
         this.zt = zt;
     }
-
 
 
 }

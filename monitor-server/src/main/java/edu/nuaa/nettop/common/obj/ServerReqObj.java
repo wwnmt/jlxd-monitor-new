@@ -4,21 +4,18 @@
 package edu.nuaa.nettop.common.obj;
 
 import java.io.Serializable;
-import java.util.List;
 
 public class ServerReqObj implements Serializable {
     /**
      *
      */
     private static final long serialVersionUID = 3273833000063386481L;
+    private String smc;    //服务器id
+    private String pmc;   //端口名
 
     public ServerReqObj() {
         // TODO Auto-generated constructor stub
     }
-
-    private String smc;    //服务器id
-
-    private String pmc;   //端口名
 
     public String getSmc() {
         return smc;
@@ -35,7 +32,6 @@ public class ServerReqObj implements Serializable {
     public void setPmc(String pmc) {
         this.pmc = pmc;
     }
-
 
 
 }

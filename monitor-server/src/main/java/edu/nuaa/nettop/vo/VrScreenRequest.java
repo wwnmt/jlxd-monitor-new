@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,9 +20,17 @@ import java.util.List;
 @AllArgsConstructor
 public class VrScreenRequest {
 
+    List<String> serverIps = new ArrayList<>();
+    List<VrPort> ports = new ArrayList<>();
     private String wlid;
 
-    List<String> serverIps = new ArrayList<>();
-
-
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class VrPort implements Serializable {
+        private String serverIp;
+        private String deviceIp;
+        private String vPort;
+        private String pPort;
+    }
 }

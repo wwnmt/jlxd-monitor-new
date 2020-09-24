@@ -2,7 +2,6 @@ package edu.nuaa.nettop.controller;
 
 import com.alibaba.fastjson.JSON;
 import edu.nuaa.nettop.exception.ProxyException;
-import edu.nuaa.nettop.model.LxdStatus;
 import edu.nuaa.nettop.service.LxdService;
 import edu.nuaa.nettop.vo.lxd.LxdRequest;
 import edu.nuaa.nettop.vo.lxd.LxdResponse;

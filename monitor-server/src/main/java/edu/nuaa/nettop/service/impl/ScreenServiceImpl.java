@@ -9,6 +9,7 @@ import edu.nuaa.nettop.common.obj.ServerObj;
 import edu.nuaa.nettop.common.utils.CommonUtils;
 import edu.nuaa.nettop.common.utils.ProxyUtil;
 import edu.nuaa.nettop.dao.go.DeployDOMapper;
+import edu.nuaa.nettop.dao.go.PhysicalPortDOMapper;
 import edu.nuaa.nettop.dao.go.ServerDOMapper;
 import edu.nuaa.nettop.dao.main.DDosTdDOMapper;
 import edu.nuaa.nettop.dao.main.LinkDOMapper;
@@ -20,6 +21,7 @@ import edu.nuaa.nettop.dao.main.TaskDOMapper;
 import edu.nuaa.nettop.entity.DDosTaskDO;
 import edu.nuaa.nettop.entity.LinkDO;
 import edu.nuaa.nettop.entity.PhysicalDevDO;
+import edu.nuaa.nettop.entity.PhysicalPortDO;
 import edu.nuaa.nettop.entity.TaskForDDosDO;
 import edu.nuaa.nettop.model.ServPort;
 import edu.nuaa.nettop.quartz.TaskScheduler;
@@ -37,9 +39,9 @@ import org.quartz.SchedulerException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * Created with IntelliJ IDEA.
@@ -62,9 +64,10 @@ public class ScreenServiceImpl implements ScreenService {
     private final LinkDOMapper linkDOMapper;
     private final PortDOMapper portDOMapper;
     private final PhysicalDevDOMapper physicalDevDOMapper;
+    private final PhysicalPortDOMapper physicalPortDOMapper;
 
     @Autowired
-    public ScreenServiceImpl(TaskScheduler taskScheduler, TaskDOMapper taskDOMapper, DeployDOMapper deployDOMapper, ServiceNetDOMapper serviceNetDOMapper, NodeDOMapper nodeDOMapper, DDosTdDOMapper dDosTdDOMapper, ServerDOMapper serverDOMapper, LinkDOMapper linkDOMapper, PortDOMapper portDOMapper, PhysicalDevDOMapper physicalDevDOMapper) {
+    public ScreenServiceImpl(TaskScheduler taskScheduler, TaskDOMapper taskDOMapper, DeployDOMapper deployDOMapper, ServiceNetDOMapper serviceNetDOMapper, NodeDOMapper nodeDOMapper, DDosTdDOMapper dDosTdDOMapper, ServerDOMapper serverDOMapper, LinkDOMapper linkDOMapper, PortDOMapper portDOMapper, PhysicalDevDOMapper physicalDevDOMapper, PhysicalPortDOMapper physicalPortDOMapper) {
         this.taskScheduler = taskScheduler;
         this.taskDOMapper = taskDOMapper;
         this.deployDOMapper = deployDOMapper;
@@ -75,18 +78,20 @@ public class ScreenServiceImpl implements ScreenService {
         this.linkDOMapper = linkDOMapper;
         this.portDOMapper = portDOMapper;
         this.physicalDevDOMapper = physicalDevDOMapper;
+        this.physicalPortDOMapper = physicalPortDOMapper;
     }
 
     @Override
-    public DDosScreenRequest createDDosScreen(String wlid) throws MonitorException{
+    public DDosScreenRequest createDDosScreen(String wlid) throws MonitorException {
         DDosScreenRequest request = new DDosScreenRequest();
         request.setWlid(wlid);
         //查找网络前缀
         String pre = serviceNetDOMapper.getYxidByPrimaryKey(wlid);
         //根据wlid检索ddos任务
         TaskForDDosDO taskForDDosDO = taskDOMapper.findDDosTaskByWlid(wlid);
-        if (CollectionUtils.isEmpty(taskForDDosDO.getDdosTaskDOs()))
+        if (CollectionUtils.isEmpty(taskForDDosDO.getDdosTaskDOs())) {
             throw new MonitorException("未找到DDoS攻击任务");
+        }
         //TODO只针对一个DDos攻击任务
         DDosTaskDO dDosTaskDO = taskForDDosDO.getDdosTaskDOs().get(0);
         //设置攻击者参数
@@ -134,7 +139,17 @@ public class ScreenServiceImpl implements ScreenService {
         //读取服务器列表
         List<String> serverIps = serverDOMapper.listServerIp();
         request.setServerIps(serverIps);
-
+        //读取虚实互联接口信息
+        List<PhysicalPortDO> physicalPortDOList = physicalPortDOMapper.findPportByWlid(wlid);
+        for (PhysicalPortDO portDO : physicalPortDOList) {
+            VrScreenRequest.VrPort vrPort = new VrScreenRequest.VrPort(
+                    portDO.getServerIp(),
+                    deployDOMapper.queryManageIpByDeviceName(portDO.getNodeName()),
+                    portDO.getIntName(),
+                    portDO.getPhyIntName()
+            );
+            request.getPorts().add(vrPort);
+        }
         return request;
     }
 
@@ -148,14 +163,29 @@ public class ScreenServiceImpl implements ScreenService {
         request.setServerIps(serverIps);
         //读取链路信息
         List<LinkDO> linkDOList = linkDOMapper.findByWlid(wlid);
-        Map<String, String> linkInfoMap = linkDOList.stream().collect(Collectors.toMap(
-                LinkDO::getLlid, LinkDO::getLlbs
-        ));
+        Map<String, String> linkInfoMap = new HashMap<>();
+        for (LinkDO linkDO : linkDOList) {
+            if (linkDO.getLlbs() != null && linkDO.getLlid() != null) {
+                linkInfoMap.put(linkDO.getLlid(), linkDO.getLlbs());
+            } else {
+                String fromName = nodeDOMapper.findNodeNameByPrimaryKey(linkDO.getYsbid());
+                String fromPort = portDOMapper.findNameByPrimaryKey(linkDO.getYdk());
+                String toName = nodeDOMapper.findNodeNameByPrimaryKey(linkDO.getMdsbid());
+                String toPort = portDOMapper.findNameByPrimaryKey(linkDO.getMddk());
+                linkInfoMap.put(linkDO.getLlid(),
+                                fromName + "-" + fromPort + ":" + toName + "-" + toPort);
+            }
+        }
         request.setLinkInfoMap(linkInfoMap);
         //读取链路带宽
-        Map<String, Integer> linkBandwidthMap = linkDOList.stream().collect(Collectors.toMap(
-                LinkDO::getLlid, LinkDO::getDk
-        ));
+        Map<String, Integer> linkBandwidthMap = new HashMap<>();
+        for (LinkDO linkDO : linkDOList) {
+            String ydkId = linkDO.getYdk();
+            String mddkId = linkDO.getMddk();
+            Integer ydk = portDOMapper.findDkByPrimaryKey(ydkId);
+            Integer mdk = portDOMapper.findDkByPrimaryKey(mddkId);
+            linkBandwidthMap.put(linkDO.getLlid(), (ydk + mdk) / 2);
+        }
         request.setLinkBandwidthMap(linkBandwidthMap);
         //读取路由器名称
         String sbid;
@@ -163,7 +193,7 @@ public class ScreenServiceImpl implements ScreenService {
         if (Constants.perfDevMap.containsKey(wlid)) {
             sbid = Constants.perfDevMap.get(wlid);
         } else {
-            sbid = nodeDOMapper.findNodeByWlid(wlid).get(0).getSbmc();
+            sbid = nodeDOMapper.findNodeByWlid(wlid).get(0).getSbid();
         }
         String devName = nodeDOMapper.findNodeNameByPrimaryKey(sbid);
         String serverIp = deployDOMapper.queryServerIpByDeviceName(pre + devName);
@@ -212,6 +242,7 @@ public class ScreenServiceImpl implements ScreenService {
             JobDataMap jobDataMap = new JobDataMap();
             jobDataMap.put("wlid", request.getWlid());
             jobDataMap.put("servers", request.getServerIps());
+            jobDataMap.put("vrPort", request.getPorts());
             //提交任务
             taskScheduler.publishJob(jobName, jobGroup, jobDataMap, 5, VrScreenTask.class);
         } catch (SchedulerException e) {
@@ -224,7 +255,7 @@ public class ScreenServiceImpl implements ScreenService {
         //TODO 验证参数
         log.info("Recv Perf screen request-> {}", JSON.toJSONString(request));
         String jobName = request.getWlid();
-        String jobGroup = TaskType.VR_SCREEN.getDesc();
+        String jobGroup = TaskType.PRO_SCREEN.getDesc();
         try {
             //判断任务已存在
             if (taskScheduler.checkExists(jobName, jobGroup)) {
@@ -254,29 +285,45 @@ public class ScreenServiceImpl implements ScreenService {
     public void deleteScreen(String jobName, String jobGroup) throws MonitorException {
         taskScheduler.deleteTask(jobName, jobGroup);
         //清空redis缓存数据
-        CommonUtils.delInRedis(jobName+"ddostm");
-        CommonUtils.delInRedis(jobName+"vrtm");
-        CommonUtils.delInRedis(jobName+"perftm");
+        CommonUtils.delInRedis(jobName + "ddostm");
+        CommonUtils.delInRedis(jobName + "vrtm");
+        CommonUtils.delInRedis(jobName + "perftm");
     }
 
     @Override
     public ServerObj getPhysicalInterfaceInfo(String wlid, String sbid) throws MonitorException {
-        PhysicalDevDO physicalDevDO = physicalDevDOMapper.selectByPrimaryKey(sbid);
+        // PhysicalDevDO physicalDevDO = physicalDevDOMapper.selectByPrimaryKey(sbid);
         String pre = serviceNetDOMapper.getYxidByPrimaryKey(wlid);
         String serverIp = deployDOMapper.queryServerIpByDeviceName(
                 pre + nodeDOMapper.findNodeNameByPrimaryKey(sbid));
-        String physicalIntName = physicalDevDO.getLjsb();
+        // String physicalIntName = physicalDevDO.getLjsb();
         ServPort servPort = ProxyUtil.getServPort(serverIp, serverIp);
+        ServerObj serverObj = new ServerObj();
+        serverObj.setMc(serverIp);
         for (ServPort.Port port : servPort.getPorts()) {
-            if (port.getDkmc().equals(physicalIntName)) {
-                ServerObj serverObj = new ServerObj();
-                NetPortObj portObj = new NetPortObj();
-                portObj.setIp(port.getIp());
-                portObj.setMc(port.getDkmc());
-                serverObj.setPort(portObj);
-                return serverObj;
+            if (port.getDkmc().equals("lo")
+                    || port.getDkmc().startsWith("veth")
+                    || port.getDkmc().startsWith("lxd")
+                    || port.getDkmc().startsWith("Mana"))
+                continue;
+            NetPortObj portObj = new NetPortObj();
+            portObj.setIp(port.getIp());
+            portObj.setMc(port.getDkmc());
+            serverObj.addPort(portObj);
+        }
+        List<PhysicalPortDO> physicalPortDOList = physicalPortDOMapper.findPportByWlid(wlid);
+        for (PhysicalPortDO portDO : physicalPortDOList) {
+            String deviceIp = deployDOMapper.queryManageIpByDeviceName(portDO.getNodeName());
+            servPort = ProxyUtil.getServPort(portDO.getServerIp(), deviceIp);
+            for (ServPort.Port port : servPort.getPorts()) {
+                if (port.getDkmc().equals(portDO.getIntName())) {
+                    NetPortObj portObj = new NetPortObj();
+                    portObj.setIp(port.getIp());
+                    portObj.setMc(portDO.getPhyIntName());
+                    serverObj.addPort(portObj);
+                }
             }
         }
-        return null;
+        return serverObj;
     }
 }

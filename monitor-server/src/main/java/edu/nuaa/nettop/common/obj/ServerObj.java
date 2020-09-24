@@ -4,37 +4,40 @@
 package edu.nuaa.nettop.common.obj;
 
 import java.io.Serializable;
-import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
-public class ServerObj   implements Serializable {
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 1089276480856237632L;
+public class ServerObj implements Serializable {
+    /**
+     *
+     */
+    private static final long serialVersionUID = 1089276480856237632L;
 
-	private String mc;
-	
-	private NetPortObj port;
+    private String mc;
 
-	public String getMc() {
-		return mc;
-	}
+    private List<NetPortObj> ports = new LinkedList<>();
 
-	public void setMc(String mc) {
-		this.mc = mc;
-	}
+    public ServerObj() {
+        // TODO Auto-generated constructor stub
+    }
 
-	public NetPortObj getPort() {
-		return port;
-	}
+    public String getMc() {
+        return mc;
+    }
 
-	public void setPort(NetPortObj port) {
-		this.port = port;
-	}
+    public void setMc(String mc) {
+        this.mc = mc;
+    }
 
-	public ServerObj() {
-		// TODO Auto-generated constructor stub
-	}
+    public List<NetPortObj> getPorts() {
+        return ports;
+    }
 
+    public void addPort(NetPortObj netPortObj) {
+        this.ports.add(netPortObj);
+    }
+
+    public void setPorts(List<NetPortObj> ports) {
+        this.ports = ports;
+    }
 }

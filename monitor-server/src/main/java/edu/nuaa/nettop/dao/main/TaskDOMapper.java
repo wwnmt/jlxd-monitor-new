@@ -1,12 +1,9 @@
 package edu.nuaa.nettop.dao.main;
 
-import edu.nuaa.nettop.entity.DDosTaskDO;
 import edu.nuaa.nettop.entity.TaskDO;
 import edu.nuaa.nettop.entity.TaskForDDosDO;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
-
-import java.util.List;
 
 @Repository
 public interface TaskDOMapper {

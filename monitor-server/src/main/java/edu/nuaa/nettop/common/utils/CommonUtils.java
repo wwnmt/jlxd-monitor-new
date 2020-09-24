@@ -3,14 +3,11 @@ package edu.nuaa.nettop.common.utils;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.digest.DigestUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.serializer.RedisSerializer;
-import org.springframework.stereotype.Component;
 import redis.clients.jedis.JedisPoolConfig;
 
 import java.util.Map;
@@ -73,7 +70,7 @@ public class CommonUtils {
         JedisConnectionFactory factory = new JedisConnectionFactory(poolConfig);
         RedisStandaloneConfiguration configuration = factory.getStandaloneConfiguration();
         assert configuration != null;
-        configuration.setHostName("127.0.0.1");
+        configuration.setHostName("192.168.31.15");
         configuration.setPort(6379);
         configuration.setPassword("123456");
         return factory;

@@ -7,7 +7,7 @@ package edu.nuaa.nettop.common.exception;
  * Date: 2020-09-15
  * Time: 17:37
  */
-public class MonitorException extends Exception{
+public class MonitorException extends Exception {
 
     public MonitorException(String message) {
         super(message);

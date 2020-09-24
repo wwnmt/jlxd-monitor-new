@@ -20,12 +20,9 @@ import org.quartz.Job;
 import org.quartz.JobDataMap;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
-import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.ArrayList;
@@ -116,10 +113,11 @@ public class NetMonitorTask implements Job {
                         linkStatusObj.setSt((byte) 1);
                     }
                     long tp = Math.round(throughput);
-                    if (tp < 524_288)
+                    if (tp < 524_288) {
                         linkStatusObj.setTp(0);
-                    else
+                    } else {
                         linkStatusObj.setTp(tp >>> 20);
+                    }
                 }
                 linkStatusObjList.add(linkStatusObj);
             });
@@ -136,13 +134,13 @@ public class NetMonitorTask implements Job {
             netStatusObj.setErrordevs(errDev);
 
             String tmString;
-            if ((tmString = CommonUtils.getFromRedis(wlid+"tm")) == null) {
-                CommonUtils.storeToRedis(wlid+"tm", "5");
+            if ((tmString = CommonUtils.getFromRedis(wlid + "tm")) == null) {
+                CommonUtils.storeToRedis(wlid + "tm", "5");
                 netStatusObj.setTm(0);
             } else {
                 int tm = Integer.parseInt(tmString);
                 netStatusObj.setTm(tm);
-                CommonUtils.storeToRedis(wlid+"tm", String.valueOf(tm+5));
+                CommonUtils.storeToRedis(wlid + "tm", String.valueOf(tm + 5));
             }
             BoNetStatus boNetStatus = new BoNetStatus(netStatusObj);
             log.debug("{} Data-> {}", wlid, JSON.toJSONString(boNetStatus));
@@ -213,16 +211,18 @@ public class NetMonitorTask implements Job {
 
     private String findSbidByName(String name) {
         for (Node node : nodes) {
-            if (node.getName().equals(name))
+            if (node.getName().equals(name)) {
                 return node.getNodeId();
+            }
         }
         return null;
     }
 
     private Link findLinkByLinkId(String linkId) {
         for (Link link : links) {
-            if (link.getLinkId().equals(linkId))
+            if (link.getLinkId().equals(linkId)) {
                 return link;
+            }
         }
         return null;
     }

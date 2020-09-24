@@ -2,10 +2,7 @@ package edu.nuaa.nettop.task;
 
 import com.alibaba.fastjson.JSON;
 import edu.nuaa.nettop.common.constant.Constants;
-import edu.nuaa.nettop.common.obj.LinkStatusObj;
 import edu.nuaa.nettop.common.obj.ServerReqObj;
-import edu.nuaa.nettop.common.response.BoDdosScreenStatus;
-import edu.nuaa.nettop.common.response.BoLinkStatus;
 import edu.nuaa.nettop.common.response.BoNetServStatus;
 import edu.nuaa.nettop.common.response.BoRestResObj;
 import edu.nuaa.nettop.common.response.BoServerIntfStatus;
@@ -15,8 +12,8 @@ import edu.nuaa.nettop.common.utils.ProxyUtil;
 import edu.nuaa.nettop.config.StaticConfig;
 import edu.nuaa.nettop.model.ServMem;
 import edu.nuaa.nettop.model.ServPort;
+import edu.nuaa.nettop.vo.VrScreenRequest;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections4.CollectionUtils;
 import org.quartz.Job;
 import org.quartz.JobDataMap;
 import org.quartz.JobExecutionContext;
@@ -27,7 +24,6 @@ import org.springframework.http.MediaType;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -51,22 +47,22 @@ public class VrScreenTask implements Job {
         JobDataMap jobDataMap = jobExecutionContext.getJobDetail().getJobDataMap();
         String wlid = jobDataMap.getString("wlid");
         List<String> serverIps = (List<String>) jobDataMap.get("servers");
+        List<VrScreenRequest.VrPort> portList = (List<VrScreenRequest.VrPort>) jobDataMap.get("vrPort");
         serverIps.remove("192.168.31.12");
-        serverIps.remove("192.168.31.14");
         screenStatus.setWlid(wlid);
         //服务器总体资源利用率
         setServerData(screenStatus, serverIps);
         //服务器端口监控数据
-        setServerPortData(screenStatus, serverIps, wlid);
+        setServerPortData(screenStatus, serverIps, wlid, portList);
         //set TM
         String tmString;
-        if ((tmString = CommonUtils.getFromRedis(wlid+"vrtm")) == null) {
-            CommonUtils.storeToRedis(wlid+"vrtm", "5");
+        if ((tmString = CommonUtils.getFromRedis(wlid + "vrtm")) == null) {
+            CommonUtils.storeToRedis(wlid + "vrtm", "5");
             screenStatus.setTm(0);
         } else {
             int tm = Integer.parseInt(tmString);
             screenStatus.setTm(tm);
-            CommonUtils.storeToRedis(wlid+"vrtm", String.valueOf(tm+5));
+            CommonUtils.storeToRedis(wlid + "vrtm", String.valueOf(tm + 5));
         }
         log.info("vr screen data->{}", JSON.toJSONString(screenStatus));
         //提交数据
@@ -88,70 +84,102 @@ public class VrScreenTask implements Job {
         }
     }
 
-    private void setServerPortData(BoVirtRealConnScreenStatus screenStatus, List<String> serverIps, String wlid) {
+    private BoServerIntfStatus createIntfStatus(ServPort.Port port) {
+        if (!port.getDkmc().startsWith("e") && !port.getDkmc().startsWith("w")) {
+            return null;
+        }
+        BoServerIntfStatus intfStatus = new BoServerIntfStatus();
+        intfStatus.setMc(port.getMc());
+        intfStatus.setDkmc(port.getDkmc());
+        intfStatus.setIp(port.getIp());
+        intfStatus.setZt(port.getZt());
+        String cache;
+        if ((cache = CommonUtils.getFromRedis(port.getMc() + port.getDkmc())) != null) {
+            String[] caches = cache.split("-");
+            long oldRecv = Long.parseLong(caches[0]);
+            long oldSend = Long.parseLong(caches[1]);
+            long oldData = Math.max(oldRecv, oldSend);
+            long newData = Math.max(Long.parseLong(port.getRecvBytes()), Long.parseLong(port.getSendBytes()));
+            long tp = newData < oldData ?
+                    (Long.MAX_VALUE - oldData + newData) * 8 / 5 :
+                    (newData - oldData) * 8 / 5;
+            if (tp < 0) {
+                tp = 0L;
+            }
+            intfStatus.setTp(tp / 1000);
+        } else {
+            intfStatus.setTp(0L);
+            CommonUtils.storeToRedis(port.getMc() + port.getDkmc(),
+                                     port.getRecvBytes() + "-" + port.getSendBytes());
+        }
+        return intfStatus;
+    }
+
+    private void setServerPortData(BoVirtRealConnScreenStatus screenStatus, List<String> serverIps, String wlid,
+                                   List<VrScreenRequest.VrPort> portList) {
         List<BoServerIntfStatus> serverIntfStatuses = new ArrayList<>();
+        //获取服务器上基本端口数据
         for (String serverIp : serverIps) {
             ServPort servPort = ProxyUtil.getServPort(serverIp, serverIp);
             for (ServPort.Port port : servPort.getPorts()) {
-                if (port.getDkmc().equals("lo"))
-                    continue;
-                BoServerIntfStatus intfStatus = new BoServerIntfStatus();
-                intfStatus.setMc(port.getMc());
-                intfStatus.setDkmc(port.getDkmc());
-                intfStatus.setIp(port.getIp());
-                intfStatus.setZt(port.getZt());
-                String cache;
-                if ((cache = CommonUtils.getFromRedis(port.getMc()+port.getDkmc())) != null) {
-                    String[] caches = cache.split("-");
-                    long oldRecv = Long.parseLong(caches[0]);
-                    long oldSend = Long.parseLong(caches[1]);
-                    long oldData = Math.max(oldRecv, oldSend);
-                    long newData = Math.max(Long.parseLong(port.getRecvBytes()),
-                                            Long.parseLong(port.getSendBytes()));
-                    long tp = newData < oldData ?
-                            (Long.MAX_VALUE - oldData + newData) * 8 / 5 :
-                            (newData - oldData) * 8 / 5;
-//                    tp = Math.round(tp);
-//                    if (tp < 524_288)
-//                        intfStatus.setTp("0");
-//                    else
-//                        intfStatus.setTp(String.valueOf(tp >>> 20));
-                    intfStatus.setTp(tp / 1000);
-                } else {
-                    intfStatus.setTp(0L);
-                    CommonUtils.storeToRedis(port.getMc()+port.getDkmc(),
-                                             port.getRecvBytes()+"-"+port.getSendBytes());
+                BoServerIntfStatus intfStatus = createIntfStatus(port);
+                if (intfStatus != null && intfStatus.getZt() != 0) {
+                    serverIntfStatuses.add(intfStatus);
                 }
-                screenStatus.getSdks().add(intfStatus);
-                serverIntfStatuses.add(intfStatus);
+            }
+        }
+        //使用虚实互联端口数据填充sdks
+        for (VrScreenRequest.VrPort vrPort : portList) {
+            ServPort servPort = ProxyUtil.getServPort(vrPort.getServerIp(), vrPort.getDeviceIp());
+            servPort.getPorts().stream()
+                    .filter(port1 -> port1.getDkmc().equals(vrPort.getVPort()))
+                    .findFirst()
+                    .ifPresent(port1 -> {
+                        BoServerIntfStatus intfStatus = createIntfStatus(port1);
+                        if (intfStatus != null) {
+                            intfStatus.setDkmc(vrPort.getPPort());
+                            screenStatus.getSdks().add(intfStatus);
+                        }
+                    });
+            if (screenStatus.getSdks().size() >= 3) {
+                break;
+            }
+        }
+        //使用用户指定端口数据填充sdks
+        List<ServerReqObj> serverReqObjs = Constants.servIntfMap.get(wlid);
+        if (serverReqObjs != null && serverReqObjs.size() > 0) {
+            int i = 0;
+            for (ServerReqObj serverReqObj : serverReqObjs) {
+                BoServerIntfStatus intfStatus = findIntfStatisByName(serverIntfStatuses,
+                                                                     serverReqObj.getSmc(),
+                                                                     serverReqObj.getPmc());
+                if (intfStatus != null) {
+                    int size = screenStatus.getSdks().size();
+                    if (size < 3) {
+                        screenStatus.getSdks().add(intfStatus);
+                    } else {
+                        screenStatus.getSdks().set(i, intfStatus);
+                        i++;
+                    }
+                    if (i >= 2) {
+                        break;
+                    }
+                }
             }
         }
         //排序
         serverIntfStatuses.sort(Comparator.comparingLong(BoServerIntfStatus::getTp));
         int length = serverIntfStatuses.size();
-        List<ServerReqObj> serverReqObjs = Constants.servIntfMap.get(wlid);
-        if (serverReqObjs != null) {
-            int size = serverReqObjs.size();
-            for (int i = 0; i < 3-size; i++) {
-                screenStatus.getTopsdks().add(
-                        serverIntfStatuses.get(length-1)
-                );
-                length--;
-            }
-            for (ServerReqObj serverReqObj : serverReqObjs) {
-                screenStatus.getTopsdks().add(
-                        findIntfStatisByName(serverIntfStatuses,
-                                             serverReqObj.getSmc(),
-                                             serverReqObj.getPmc())
-                );
-            }
-        } else {
-            for (int i = 0; i < 3; i++) {
-                screenStatus.getTopsdks().add(
-                        serverIntfStatuses.get(length-1)
-                );
-                length--;
-            }
+        //使用服务器一般端口数据填充sdks
+        while (screenStatus.getSdks().size() < 3) {
+            screenStatus.getSdks().add(serverIntfStatuses.get(length-1));
+            length--;
+        }
+        length = serverIntfStatuses.size();
+        int n = Math.min(length, 5);
+        for (int i = 0; i < n; i++) {
+            screenStatus.getTopsdks().add(serverIntfStatuses.get(length - 1));
+            length--;
         }
     }
 
@@ -159,8 +187,9 @@ public class VrScreenTask implements Job {
                                                     String serverName,
                                                     String intfName) {
         for (BoServerIntfStatus intfStatus : list) {
-            if (intfStatus.getMc().equals(serverName) && intfStatus.getDkmc().equals(intfName))
+            if (intfStatus.getMc().equals(serverName) && intfStatus.getDkmc().equals(intfName)) {
                 return intfStatus;
+            }
         }
         return null;
     }
@@ -188,10 +217,11 @@ public class VrScreenTask implements Job {
         //mem usage
         long memTotalUsed = 0L;
         for (ServMem mem : memMap.values()) {
-            if (mem.getShared() + mem.getBuffer() + mem.getCache() > mem.getTotal())
+            if (mem.getShared() + mem.getBuffer() + mem.getCache() > mem.getTotal()) {
                 memTotalUsed += mem.getTotal() - mem.getAvail() - mem.getBuffer() - mem.getCache() + mem.getShared();
-            else
+            } else {
                 memTotalUsed += mem.getTotal() - mem.getAvail() - mem.getBuffer() - mem.getCache();
+            }
         }
         servStatus.setMem(memTotalUsed >> 20);
         servStatus.setMeml((double) memTotalUsed / memTotal);

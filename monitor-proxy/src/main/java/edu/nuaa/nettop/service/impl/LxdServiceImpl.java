@@ -31,14 +31,16 @@ public class LxdServiceImpl implements LxdService {
         LxdMonitorHandle task = new LxdMonitorHandle(request.getDeviceList());
         forkJoinPool.invoke(task);
         Set<LxdStatus> result = task.getRawResult();
-        if (result == null || result.size() == 0)
+        if (result == null || result.size() == 0) {
             throw new ProxyException("无法获取状态数据");
+        }
         LxdResponse response = new LxdResponse();
         for (LxdStatus lxdStatus : result) {
-            if (lxdStatus.getStatus() == 1)
+            if (lxdStatus.getStatus() == 1) {
                 response.getLxdStatuses().add(lxdStatus);
-            else
+            } else {
                 response.getErrDevs().add(lxdStatus.getName());
+            }
         }
         return response;
     }

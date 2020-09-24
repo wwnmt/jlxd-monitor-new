@@ -2,11 +2,8 @@ package edu.nuaa.nettop.service;
 
 
 import edu.nuaa.nettop.exception.ProxyException;
-import edu.nuaa.nettop.model.LxdStatus;
 import edu.nuaa.nettop.vo.lxd.LxdRequest;
 import edu.nuaa.nettop.vo.lxd.LxdResponse;
-
-import java.util.Set;
 
 /**
  * Created with IntelliJ IDEA.

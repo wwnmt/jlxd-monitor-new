@@ -76,10 +76,11 @@ public class SnmpServiceImpl implements SnmpService {
         double memCached = Double.parseDouble(memCachedList.get(0));
         long end = System.currentTimeMillis();
         log.info("Get MEM times: {} ms", end - start);
-        if (memShared + memBuffer + memCached > memTotal)
-            return df.format((memTotal - memAvailable - memBuffer - memCached + memShared )/memTotal * 100);
-        else
+        if (memShared + memBuffer + memCached > memTotal) {
+            return df.format((memTotal - memAvailable - memBuffer - memCached + memShared) / memTotal * 100);
+        } else {
             return df.format((memTotal - memAvailable - memBuffer - memCached) / memTotal * 100);
+        }
     }
 
     @Override
@@ -109,11 +110,11 @@ public class SnmpServiceImpl implements SnmpService {
     }
 
     /**
-     *  .1.3.6.1.2.1.2.2.1.2 接口名
-     *  .1.3.6.1.2.1.2.2.1.8 接口状态
-     *  .1.3.6.1.2.1.2.2.1.6 MAC地址
-     *  .1.3.6.1.2.1.2.2.1.10 收字节数
-     *  .1.3.6.1.2.1.2.2.1.16 发字节数
+     * .1.3.6.1.2.1.2.2.1.2 接口名
+     * .1.3.6.1.2.1.2.2.1.8 接口状态
+     * .1.3.6.1.2.1.2.2.1.6 MAC地址
+     * .1.3.6.1.2.1.2.2.1.10 收字节数
+     * .1.3.6.1.2.1.2.2.1.16 发字节数
      */
     @Override
     public ServPort getServerPort(SnmpRequest request) {

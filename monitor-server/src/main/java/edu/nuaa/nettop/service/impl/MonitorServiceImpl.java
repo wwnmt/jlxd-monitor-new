@@ -5,16 +5,15 @@ import edu.nuaa.nettop.common.constant.TaskType;
 import edu.nuaa.nettop.common.exception.MonitorException;
 import edu.nuaa.nettop.common.model.Link;
 import edu.nuaa.nettop.common.model.Node;
-import edu.nuaa.nettop.common.obj.NetPortObj;
-import edu.nuaa.nettop.common.obj.ServerObj;
 import edu.nuaa.nettop.common.utils.CommonUtils;
-import edu.nuaa.nettop.common.utils.ProxyUtil;
 import edu.nuaa.nettop.dao.go.DeployDOMapper;
-import edu.nuaa.nettop.dao.main.*;
+import edu.nuaa.nettop.dao.main.LinkDOMapper;
+import edu.nuaa.nettop.dao.main.NodeDOMapper;
+import edu.nuaa.nettop.dao.main.PhysicalDevDOMapper;
+import edu.nuaa.nettop.dao.main.PortDOMapper;
+import edu.nuaa.nettop.dao.main.ServiceNetDOMapper;
 import edu.nuaa.nettop.entity.LinkDO;
 import edu.nuaa.nettop.entity.NodeDO;
-import edu.nuaa.nettop.entity.PhysicalDevDO;
-import edu.nuaa.nettop.model.ServPort;
 import edu.nuaa.nettop.quartz.TaskScheduler;
 import edu.nuaa.nettop.service.MonitorService;
 import edu.nuaa.nettop.task.NetMonitorTask;
@@ -28,6 +27,7 @@ import org.quartz.SchedulerException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -76,21 +76,36 @@ public class MonitorServiceImpl implements MonitorService {
         String pre = serviceNetDOMapper.getYxidByPrimaryKey(wlid);
         //读取该网络下所有节点信息
         List<NodeDO> nodeDOList = nodeDOMapper.findNodeByWlid(wlid);
-        if (CollectionUtils.isEmpty(nodeDOList))
+        if (CollectionUtils.isEmpty(nodeDOList)) {
             throw new MonitorException("节点信息不存在");
-        List<Node> nodes = nodeDOList.parallelStream().map(nodeDO -> {
+        }
+//        List<Node> nodes = nodeDOList.parallelStream().map(nodeDO -> {
+//            if (nodeDO.getSblx().equals("gj_physical"))
+//                return null;
+//            Node node = new Node();
+//            node.setNodeId(nodeDO.getSbid());
+//            node.setName(pre + nodeDO.getSbmc());
+//            node.setServerIp(deployDOMapper.queryServerIpByDeviceName(node.getName()));
+//            return node;
+//        }).collect(Collectors.toList());
+        List<Node> nodes = new ArrayList<>();
+        for (NodeDO nodeDO : nodeDOList) {
+            if (nodeDO.getSblx().equals("gj_physical")) {
+                continue;
+            }
             Node node = new Node();
             node.setNodeId(nodeDO.getSbid());
             node.setName(pre + nodeDO.getSbmc());
             node.setServerIp(deployDOMapper.queryServerIpByDeviceName(node.getName()));
-            return node;
-        }).collect(Collectors.toList());
+            nodes.add(node);
+        }
         //读取链路信息、
         boolean flag = true;
         List<Link> links;
         List<String> linkInfoList = linkDOMapper.findLlbsByWlid(wlid);
-        if (CollectionUtils.isEmpty(linkInfoList))
+        if (CollectionUtils.isEmpty(linkInfoList)) {
             throw new MonitorException("链路信息不存在");
+        }
         for (String linkInfo : linkInfoList) {
             if (linkInfo == null) {
                 flag = false;
@@ -111,8 +126,9 @@ public class MonitorServiceImpl implements MonitorService {
         } else {
             //通过普通方法创建links
             List<LinkDO> linkDOList = linkDOMapper.findByWlid(wlid);
-            if (CollectionUtils.isEmpty(linkDOList))
+            if (CollectionUtils.isEmpty(linkDOList)) {
                 throw new MonitorException("链路信息不存在");
+            }
             links = linkDOList.parallelStream().map(linkDO -> {
                 Link link = new Link();
                 String fromName = nodeDOMapper.findNodeNameByPrimaryKey(linkDO.getYsbid());
@@ -137,8 +153,9 @@ public class MonitorServiceImpl implements MonitorService {
 
     @Override
     public void addNetMonitorTask(NetRequest request) throws MonitorException {
-        if (!request.validate())
+        if (!request.validate()) {
             throw new MonitorException("参数错误");
+        }
         String jobName = request.getWlid();
         String jobGroup = TaskType.NET_TASK.getDesc();
         try {
@@ -177,8 +194,9 @@ public class MonitorServiceImpl implements MonitorService {
 
     @Override
     public void addNodeMonitorTask(NodeRequest request) throws MonitorException {
-        if (!request.validate())
+        if (!request.validate()) {
             throw new MonitorException("参数错误");
+        }
         String jobName = request.getNodeId();
         String jobGroup = TaskType.NODE_TASK.getDesc();
         try {
@@ -209,7 +227,7 @@ public class MonitorServiceImpl implements MonitorService {
         taskScheduler.deleteTask(jobName, jobGroup);
         //删除redis数据
         //TODO
-        CommonUtils.delInRedis(jobName+"tm");
+        CommonUtils.delInRedis(jobName + "tm");
     }
 
 

@@ -7,7 +7,6 @@ import lombok.NoArgsConstructor;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 /**
  * Created with IntelliJ IDEA.
@@ -21,10 +20,8 @@ import java.util.Optional;
 @AllArgsConstructor
 public class LxdStatus implements Serializable {
 
-    private String name;
-
     private final List<PortStatus> interfaceList = new ArrayList<>();
-
+    private String name;
     private int status;
 
     private long diskUsage;

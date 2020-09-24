@@ -11,11 +11,11 @@
                         userId="root"
                         password="welcome">
         </jdbcConnection>
-<!--                <jdbcConnection driverClass="com.mysql.cj.jdbc.Driver"-->
-<!--                                connectionURL="jdbc:mysql://192.168.31.13:3306/nettop?serverTimezone=UTC"-->
-<!--                                userId="root"-->
-<!--                                password="welcome">-->
-<!--                </jdbcConnection>-->
+        <!--                <jdbcConnection driverClass="com.mysql.cj.jdbc.Driver"-->
+        <!--                                connectionURL="jdbc:mysql://192.168.31.13:3306/nettop?serverTimezone=UTC"-->
+        <!--                                userId="root"-->
+        <!--                                password="welcome">-->
+        <!--                </jdbcConnection>-->
 
         <javaTypeResolver>
             <property name="forceBigDecimals" value="false"/>
@@ -38,18 +38,18 @@
             <property name="enableSubPackages" value="true"/>
         </javaClientGenerator>
 
-<!--        <table tableName="server_basic" domainObjectName="ServerDO"-->
-<!--               enableCountByExample="false" enableUpdateByExample="false"-->
-<!--               enableDeleteByExample="false" enableSelectByExample="false"-->
-<!--               selectByExampleQueryId="false" enableSelectByPrimaryKey="true"-->
-<!--               enableUpdateByPrimaryKey="false"-->
-<!--               enableDeleteByPrimaryKey="false"></table>-->
-<!--        <table tableName="t_wlbs_rwcs_ddosrj" domainObjectName="PuppetDAO"-->
-<!--               enableCountByExample="false" enableUpdateByExample="false"-->
-<!--               enableDeleteByExample="false" enableSelectByExample="false"-->
-<!--               selectByExampleQueryId="false" enableSelectByPrimaryKey="true"-->
-<!--               enableUpdateByPrimaryKey="false"-->
-<!--               enableDeleteByPrimaryKey="false"></table>-->
+        <!--        <table tableName="topo_phyvirt" domainObjectName="PhysicalPortDO"-->
+        <!--               enableCountByExample="false" enableUpdateByExample="false"-->
+        <!--               enableDeleteByExample="false" enableSelectByExample="false"-->
+        <!--               selectByExampleQueryId="false" enableSelectByPrimaryKey="true"-->
+        <!--               enableUpdateByPrimaryKey="false"-->
+        <!--               enableDeleteByPrimaryKey="false"></table>-->
+        <!--        <table tableName="t_wlbs_rwcs_ddosrj" domainObjectName="PuppetDAO"-->
+        <!--               enableCountByExample="false" enableUpdateByExample="false"-->
+        <!--               enableDeleteByExample="false" enableSelectByExample="false"-->
+        <!--               selectByExampleQueryId="false" enableSelectByPrimaryKey="true"-->
+        <!--               enableUpdateByPrimaryKey="false"-->
+        <!--               enableDeleteByPrimaryKey="false"></table>-->
         <!--                <table tableName="t_wlbs_wlll" domainObjectName="LinkDAO"-->
         <!--                       enableCountByExample="false" enableUpdateByExample="false"-->
         <!--                       enableDeleteByExample="false" enableSelectByExample="false"-->

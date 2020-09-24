@@ -4,19 +4,17 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ServerReqParam implements Serializable{
+public class ServerReqParam implements Serializable {
     /**
      *
      */
     private static final long serialVersionUID = -39406652689694731L;
+    private String wlid;
+    private List<ServerReqObj> sports = new ArrayList<ServerReqObj>();
 
     public ServerReqParam() {
         // TODO Auto-generated constructor stub
     }
-
-    private String wlid;
-
-    private List<ServerReqObj> sports = new ArrayList<ServerReqObj>();
 
     public String getWlid() {
         return wlid;

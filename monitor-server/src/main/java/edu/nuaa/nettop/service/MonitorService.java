@@ -1,7 +1,6 @@
 package edu.nuaa.nettop.service;
 
 import edu.nuaa.nettop.common.exception.MonitorException;
-import edu.nuaa.nettop.common.obj.ServerObj;
 import edu.nuaa.nettop.vo.NetRequest;
 import edu.nuaa.nettop.vo.NodeRequest;
 

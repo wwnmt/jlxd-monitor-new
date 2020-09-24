@@ -5,7 +5,6 @@ import edu.nuaa.nettop.common.exception.MonitorException;
 import edu.nuaa.nettop.common.obj.LinkStatusObj;
 import edu.nuaa.nettop.common.response.BoDdosScreenStatus;
 import edu.nuaa.nettop.common.response.BoLinkStatus;
-import edu.nuaa.nettop.common.response.BoNetStatus;
 import edu.nuaa.nettop.common.response.BoRestResObj;
 import edu.nuaa.nettop.common.response.BoServerStatus;
 import edu.nuaa.nettop.common.response.BoTdStatus;
@@ -13,7 +12,6 @@ import edu.nuaa.nettop.common.response.BoVictimStatus;
 import edu.nuaa.nettop.common.utils.CommonUtils;
 import edu.nuaa.nettop.common.utils.ProxyUtil;
 import edu.nuaa.nettop.config.StaticConfig;
-import edu.nuaa.nettop.model.LxdStatus;
 import edu.nuaa.nettop.vo.DDosScreenRequest;
 import edu.nuaa.nettop.vo.lxd.LxdRequest;
 import edu.nuaa.nettop.vo.lxd.LxdResponse;
@@ -71,8 +69,9 @@ public class DDosScreenTask implements Job {
         //服务器资源数据
         start = System.currentTimeMillis();
         for (String serverIp : serverIps) {
-            if (serverIp.equals("192.168.31.12") || serverIp.equals("192.168.31.14"))
+            if (serverIp.equals("192.168.31.12") || serverIp.equals("192.168.31.14")) {
                 continue;
+            }
             ddosScreenStatus.addServer(setServerData(serverIp));
         }
         log.debug("server times: {}", System.currentTimeMillis() - start);
@@ -90,7 +89,7 @@ public class DDosScreenTask implements Job {
             boLinkStatus.setMc("r" + (i + 1) + ":eth" + i % 2 + "-r" + (i * 4) % 3 + ":eth1");
 //            boLinkStatus.setId(linkStatusObjList.get(i).getId());
             boLinkStatus.setSt((byte) 1);
-            boLinkStatus.setTp(String.valueOf(linkStatusObjList.get(length-1).getTp()));
+            boLinkStatus.setTp(String.valueOf(linkStatusObjList.get(length - 1).getTp()));
             linkStatuses.add(boLinkStatus);
             length--;
         }
@@ -98,13 +97,13 @@ public class DDosScreenTask implements Job {
         log.debug("links times: {}", System.currentTimeMillis() - start);
         //set TM
         String tmString;
-        if ((tmString = CommonUtils.getFromRedis(wlid+"ddostm")) == null) {
-            CommonUtils.storeToRedis(wlid+"ddostm", "5");
+        if ((tmString = CommonUtils.getFromRedis(wlid + "ddostm")) == null) {
+            CommonUtils.storeToRedis(wlid + "ddostm", "5");
             ddosScreenStatus.setTm(0);
         } else {
             int tm = Integer.parseInt(tmString);
             ddosScreenStatus.setTm(tm);
-            CommonUtils.storeToRedis(wlid+"ddostm", String.valueOf(tm+5));
+            CommonUtils.storeToRedis(wlid + "ddostm", String.valueOf(tm + 5));
         }
         log.info("Create data-> {}", JSON.toJSONString(ddosScreenStatus));
         sendToWeb(ddosScreenStatus);
@@ -142,9 +141,10 @@ public class DDosScreenTask implements Job {
         for (DDosScreenRequest.Td td : tds) {
             long tcpOutRatio = ProxyUtil.getTcpOut(td.getServerIp(), td.getManageIp());
             long udpOutRatio = ProxyUtil.getUdpOut(td.getServerIp(), td.getManageIp());
-            tcpList.add(tcpOutRatio*100);
-            udpList.add(udpOutRatio*100);
-        }                tdStatus.setMaxtcp(Collections.max(tcpList));
+            tcpList.add(tcpOutRatio * 100);
+            udpList.add(udpOutRatio * 100);
+        }
+        tdStatus.setMaxtcp(Collections.max(tcpList));
         tdStatus.setMintcp(Collections.min(tcpList));
         tdStatus.setMaxudp(Collections.max(udpList));
         tdStatus.setMinudp(Collections.min(udpList));
@@ -157,7 +157,7 @@ public class DDosScreenTask implements Job {
         BoVictimStatus victimStatus = new BoVictimStatus();
         victimStatus.setMc(victim.getName());
         //SYN_FLOOD攻击效果
-        DecimalFormat df = new DecimalFormat("0.00" );
+        DecimalFormat df = new DecimalFormat("0.00");
         victimStatus.setRate(Double.parseDouble(df.format(Math.random())));
         /*
             用wc -l进行统计即可得出某个端口的连接数
