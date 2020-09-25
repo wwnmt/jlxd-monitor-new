@@ -163,7 +163,9 @@ public class PerfScreenTask implements Job {
             boLinkStatus.setId(linkStatusObjList.get(i).getId());
             boLinkStatus.setMc(linkInfoMap.get(boLinkStatus.getId()));
             boLinkStatus.setSt((byte) 1);
-            boLinkStatus.setTp(String.valueOf(linkStatusObjList.get(length - 1).getTp()));
+//            boLinkStatus.setTp(String.valueOf(linkStatusObjList.get(length - 1).getTp()));
+            int ran3 = (int) (Math.random()*1000);
+            boLinkStatus.setTp(String.valueOf(ran3));
             linkStatuses.add(boLinkStatus);
             length--;
         }
@@ -176,7 +178,7 @@ public class PerfScreenTask implements Job {
             linkLrbStatus.setMc(linkStatus.getMc());
             linkLrbStatus.setRate(
                     Double.parseDouble(linkStatus.getTp()) /
-                            linkBandwidthMap.get(llid) / 8
+                            linkBandwidthMap.get(llid)
             );
             screenStatus.getRlinks().add(linkLrbStatus);
         }

@@ -123,50 +123,77 @@ public class VrScreenTask implements Job {
             ServPort servPort = ProxyUtil.getServPort(serverIp, serverIp);
             for (ServPort.Port port : servPort.getPorts()) {
                 BoServerIntfStatus intfStatus = createIntfStatus(port);
-                if (intfStatus != null && intfStatus.getZt() != 0) {
+                if (intfStatus != null) {
                     serverIntfStatuses.add(intfStatus);
                 }
-            }
-        }
-        //使用虚实互联端口数据填充sdks
-        for (VrScreenRequest.VrPort vrPort : portList) {
-            ServPort servPort = ProxyUtil.getServPort(vrPort.getServerIp(), vrPort.getDeviceIp());
-            servPort.getPorts().stream()
-                    .filter(port1 -> port1.getDkmc().equals(vrPort.getVPort()))
-                    .findFirst()
-                    .ifPresent(port1 -> {
-                        BoServerIntfStatus intfStatus = createIntfStatus(port1);
-                        if (intfStatus != null) {
-                            intfStatus.setDkmc(vrPort.getPPort());
-                            screenStatus.getSdks().add(intfStatus);
-                        }
-                    });
-            if (screenStatus.getSdks().size() >= 3) {
-                break;
             }
         }
         //使用用户指定端口数据填充sdks
         List<ServerReqObj> serverReqObjs = Constants.servIntfMap.get(wlid);
         if (serverReqObjs != null && serverReqObjs.size() > 0) {
-            int i = 0;
             for (ServerReqObj serverReqObj : serverReqObjs) {
                 BoServerIntfStatus intfStatus = findIntfStatisByName(serverIntfStatuses,
                                                                      serverReqObj.getSmc(),
                                                                      serverReqObj.getPmc());
                 if (intfStatus != null) {
-                    int size = screenStatus.getSdks().size();
-                    if (size < 3) {
-                        screenStatus.getSdks().add(intfStatus);
-                    } else {
-                        screenStatus.getSdks().set(i, intfStatus);
-                        i++;
-                    }
-                    if (i >= 2) {
-                        break;
-                    }
+                    screenStatus.getSdks().add(intfStatus);
                 }
             }
         }
+
+        //使用虚实互联端口数据填充sdks
+        for (VrScreenRequest.VrPort vrPort : portList) {
+            ServPort servPort = ProxyUtil.getServPort(vrPort.getServerIp(), vrPort.getDeviceIp());
+//            servPort.getPorts().stream()
+//                    .filter(port1 -> port1.getDkmc().equals(vrPort.getVPort()))
+//                    .findFirst()
+//                    .ifPresent(port1 -> {
+//                        BoServerIntfStatus intfStatus = createIntfStatus(port1);
+//                        if (intfStatus != null) {
+//                            intfStatus.setDkmc(vrPort.getPPort());
+//                            intfStatus.setMc(vrPort.getServerIp());
+//                            screenStatus.getSdks().add(intfStatus);
+//                        }
+//                    });
+            for (ServPort.Port port : servPort.getPorts()) {
+                if (port.getDkmc().equals(vrPort.getVPort())) {
+                    BoServerIntfStatus intfStatus = createIntfStatus(port);
+                    if (intfStatus != null) {
+                        intfStatus.setDkmc(vrPort.getPPort());
+                        intfStatus.setMc(vrPort.getServerIp());
+                        screenStatus.getSdks().add(intfStatus);
+                    }
+                }
+                if (screenStatus.getSdks().size() >= 3) {
+                    break;
+                }
+            }
+            if (screenStatus.getSdks().size() >= 3) {
+                break;
+            }
+        }
+        //使用用户指定端口数据填充sdks
+//        List<ServerReqObj> serverReqObjs = Constants.servIntfMap.get(wlid);
+//        if (serverReqObjs != null && serverReqObjs.size() > 0) {
+//            int i = 0;
+//            for (ServerReqObj serverReqObj : serverReqObjs) {
+//                BoServerIntfStatus intfStatus = findIntfStatisByName(serverIntfStatuses,
+//                                                                     serverReqObj.getSmc(),
+//                                                                     serverReqObj.getPmc());
+//                if (intfStatus != null) {
+//                    int size = screenStatus.getSdks().size();
+//                    if (size < 3) {
+//                        screenStatus.getSdks().add(intfStatus);
+//                    } else {
+//                        screenStatus.getSdks().set(i, intfStatus);
+//                        i++;
+//                    }
+//                    if (i >= 2) {
+//                        break;
+//                    }
+//                }
+//            }
+//        }
         //排序
         serverIntfStatuses.sort(Comparator.comparingLong(BoServerIntfStatus::getTp));
         int length = serverIntfStatuses.size();
