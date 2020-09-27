@@ -101,7 +101,7 @@ public class NetMonitorTask implements Job {
                                                          oldDataMap.get(linkId),
                                                          interval);
                 LinkStatusObj linkStatusObj = new LinkStatusObj();
-                linkStatusObj.setId(linkId);
+                linkStatusObj.setLlid(linkId);
                 Link link = findLinkByLinkId(linkId);
                 if (link == null) {
                     linkStatusObj.setSt((byte) 0);
@@ -143,7 +143,7 @@ public class NetMonitorTask implements Job {
                 CommonUtils.storeToRedis(wlid + "tm", String.valueOf(tm + 5));
             }
             BoNetStatus boNetStatus = new BoNetStatus(netStatusObj);
-            log.debug("{} Data-> {}", wlid, JSON.toJSONString(boNetStatus));
+            log.info("{} Data-> {}", wlid, JSON.toJSONString(boNetStatus));
             sendToWeb(boNetStatus);
 
             errDevs.clear();

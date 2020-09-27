@@ -160,8 +160,8 @@ public class PerfScreenTask implements Job {
         int length = linkStatusObjList.size();
         for (int i = 0; i < 5; i++) {
             BoLinkStatus boLinkStatus = new BoLinkStatus();
-            boLinkStatus.setId(linkStatusObjList.get(i).getId());
-            boLinkStatus.setMc(linkInfoMap.get(boLinkStatus.getId()));
+            boLinkStatus.setLlid(linkStatusObjList.get(i).getLlid());
+            boLinkStatus.setMc(linkInfoMap.get(boLinkStatus.getLlid()));
             boLinkStatus.setSt((byte) 1);
 //            boLinkStatus.setTp(String.valueOf(linkStatusObjList.get(length - 1).getTp()));
             int ran3 = (int) (Math.random()*1000);
@@ -173,7 +173,7 @@ public class PerfScreenTask implements Job {
         //链路容量比
         for (BoLinkStatus linkStatus : linkStatuses) {
             BoLinkLrbStatus linkLrbStatus = new BoLinkLrbStatus();
-            String llid = linkStatus.getId();
+            String llid = linkStatus.getLlid();
             linkLrbStatus.setLlid(llid);
             linkLrbStatus.setMc(linkStatus.getMc());
             linkLrbStatus.setRate(

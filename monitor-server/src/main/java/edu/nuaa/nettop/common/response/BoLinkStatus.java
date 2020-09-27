@@ -12,7 +12,7 @@ public class BoLinkStatus implements Serializable {
      */
     private static final long serialVersionUID = -6368590652476309380L;
 
-    private String id;
+    private String llid;
 
     private byte st;    //链路状态
 
@@ -26,17 +26,17 @@ public class BoLinkStatus implements Serializable {
 
     public BoLinkStatus(LinkStatusObj obj) {
         // TODO Auto-generated constructor stub
-        this.setId(obj.getId());
+        this.setLlid(obj.getLlid());
         this.setSt(obj.getSt());
         this.setTp(String.valueOf(obj.getTp()));
     }
 
-    public String getId() {
-        return id;
+    public String getLlid() {
+        return llid;
     }
 
-    public void setId(String id) {
-        this.id = id;
+    public void setLlid(String llid) {
+        this.llid = llid;
     }
 
     public byte getSt() {
@@ -66,7 +66,7 @@ public class BoLinkStatus implements Serializable {
     @Override
     public String toString() {
         return new StringJoiner(", ", BoLinkStatus.class.getSimpleName() + "[", "]")
-                .add("id='" + id + "'")
+                .add("llid='" + llid + "'")
                 .add("st=" + st)
                 .add("tp='" + tp + "'")
                 .toString();

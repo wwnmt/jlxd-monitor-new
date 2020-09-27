@@ -25,7 +25,7 @@ import javax.sql.DataSource;
 @Configuration
 @MapperScan(
         basePackages = "edu.nuaa.nettop.dao.main",
-        sqlSessionFactoryRef = "mainSqlSessionFactory",
+//        sqlSessionFactoryRef = "mainSqlSessionFactory",
         sqlSessionTemplateRef = "mainSqlSessionTemplate"
 )
 public class NettopDataSourceConfig {
@@ -35,7 +35,7 @@ public class NettopDataSourceConfig {
     // 读取application.properties中的配置参数映射成为一个对象
     // prefix表示参数的前缀
     @ConfigurationProperties(prefix = "spring.datasource.nettop")
-    public DataSource getDateSource1() {
+    public DataSource getDateSource() {
         return DataSourceBuilder.create().build();
     }
 
@@ -52,7 +52,7 @@ public class NettopDataSourceConfig {
 
     @Bean("mainSqlSessionTemplate")
     @Primary
-    public SqlSessionTemplate test1SqlSessionTemplate(
+    public SqlSessionTemplate mainSqlSessionTemplate(
             @Qualifier("mainSqlSessionFactory") SqlSessionFactory sessionFactory) {
         return new SqlSessionTemplate(sessionFactory);
     }

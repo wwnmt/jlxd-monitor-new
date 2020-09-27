@@ -148,7 +148,7 @@ public class ScreenServiceImpl implements ScreenService {
                     portDO.getIntName(),
                     portDO.getPhyIntName()
             );
-            request.getPorts().add(vrPort);
+            request.getPorts(). add(vrPort);
         }
         return request;
     }
@@ -294,8 +294,9 @@ public class ScreenServiceImpl implements ScreenService {
     public ServerObj getPhysicalInterfaceInfo(String wlid, String sbid) throws MonitorException {
         // PhysicalDevDO physicalDevDO = physicalDevDOMapper.selectByPrimaryKey(sbid);
         String pre = serviceNetDOMapper.getYxidByPrimaryKey(wlid);
+        String nodeName = nodeDOMapper.findNodeNameByPrimaryKey(sbid);
         String serverIp = deployDOMapper.queryServerIpByDeviceName(
-                pre + nodeDOMapper.findNodeNameByPrimaryKey(sbid));
+                pre + nodeName);
         // String physicalIntName = physicalDevDO.getLjsb();
         ServPort servPort = ProxyUtil.getServPort(serverIp, serverIp);
         ServerObj serverObj = new ServerObj();
@@ -304,7 +305,8 @@ public class ScreenServiceImpl implements ScreenService {
             if (port.getDkmc().equals("lo")
                     || port.getDkmc().startsWith("veth")
                     || port.getDkmc().startsWith("lxd")
-                    || port.getDkmc().startsWith("Mana"))
+                    || port.getDkmc().startsWith("Mana")
+                    || port.getDkmc().startsWith("n"))
                 continue;
             NetPortObj portObj = new NetPortObj();
             portObj.setIp(port.getIp());

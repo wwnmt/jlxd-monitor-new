@@ -9,7 +9,7 @@ public class LinkStatusObj implements Serializable {
      */
     private static final long serialVersionUID = -6368590652476309380L;
 
-    private String id;  //链路id
+    private String llid;  //链路id
 
     private byte st;    //链路状态
 
@@ -19,12 +19,12 @@ public class LinkStatusObj implements Serializable {
         // TODO Auto-generated constructor stub
     }
 
-    public String getId() {
-        return id;
+    public String getLlid() {
+        return llid;
     }
 
-    public void setId(String id) {
-        this.id = id;
+    public void setLlid(String llid) {
+        this.llid = llid;
     }
 
     public byte getSt() {

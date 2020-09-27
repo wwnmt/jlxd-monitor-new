@@ -24,14 +24,14 @@ import javax.sql.DataSource;
 @Configuration
 @MapperScan(
         basePackages = "edu.nuaa.nettop.dao.go",
-        sqlSessionFactoryRef = "goSqlSessionFactory",
+//        sqlSessionFactoryRef = "goSqlSessionFactory",
         sqlSessionTemplateRef = "goSqlSessionTemplate"
 )
 public class GoDataSourceConfig {
     // 将这个对象放入Spring容器中
     @Bean(name = "goDataSource")
     @ConfigurationProperties(prefix = "spring.datasource.go")
-    public DataSource getDateSource2() {
+    public DataSource getDateSource() {
         return DataSourceBuilder.create().build();
     }
 
