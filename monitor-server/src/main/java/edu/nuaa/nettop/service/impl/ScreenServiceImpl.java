@@ -197,6 +197,7 @@ public class ScreenServiceImpl implements ScreenService {
         }
         String devName = nodeDOMapper.findNodeNameByPrimaryKey(sbid);
         String serverIp = deployDOMapper.queryServerIpByDeviceName(pre + devName);
+        request.setRouterId(sbid);
         request.setRouterName(pre + devName);
         request.setRouterDeployServer(serverIp);
         return request;
@@ -268,6 +269,7 @@ public class ScreenServiceImpl implements ScreenService {
             jobDataMap.put("links", request.getLinkInfoMap());
             jobDataMap.put("bandwidth", request.getLinkBandwidthMap());
             jobDataMap.put("router", request.getRouterName());
+            jobDataMap.put("routerId", request.getRouterId());
             jobDataMap.put("ip", request.getRouterDeployServer());
             //提交任务
             taskScheduler.publishJob(jobName, jobGroup, jobDataMap, 5, PerfScreenTask.class);

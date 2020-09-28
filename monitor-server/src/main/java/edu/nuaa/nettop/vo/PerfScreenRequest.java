@@ -28,6 +28,8 @@ public class PerfScreenRequest {
 
     private Map<String, Integer> linkBandwidthMap;
 
+    private String routerId;
+
     private String routerName;
 
     private String routerDeployServer;

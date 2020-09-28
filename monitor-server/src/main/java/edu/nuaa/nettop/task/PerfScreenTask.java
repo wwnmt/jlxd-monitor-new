@@ -15,6 +15,7 @@ import edu.nuaa.nettop.common.utils.CommonUtils;
 import edu.nuaa.nettop.common.utils.ProxyUtil;
 import edu.nuaa.nettop.config.StaticConfig;
 import edu.nuaa.nettop.model.LxdStatus;
+import edu.nuaa.nettop.model.PortStatus;
 import edu.nuaa.nettop.model.ServMem;
 import edu.nuaa.nettop.vo.lxd.LxdRequest;
 import edu.nuaa.nettop.vo.lxd.LxdResponse;
@@ -51,6 +52,7 @@ public class PerfScreenTask implements Job {
     private Map<String, Integer> linkBandwidthMap;
     private String routerName;
     private String serverIp;
+    private String routerId;
 
     @Override
     public void execute(JobExecutionContext jobExecutionContext) throws JobExecutionException {
@@ -63,6 +65,7 @@ public class PerfScreenTask implements Job {
         linkBandwidthMap = (Map<String, Integer>) jobDataMap.get("bandwidth");
         routerName = jobDataMap.getString("router");
         serverIp = jobDataMap.getString("ip");
+        routerId = jobDataMap.getString("routerId");
         serverIps.remove("192.168.31.12");
         log.info("Run Perf screen task-> {}", wlid);
         screenStatus.setWlid(wlid);
@@ -93,6 +96,7 @@ public class PerfScreenTask implements Job {
         Set<LxdStatus> lxdStatusSet = response.getLxdStatuses();
         for (LxdStatus lxdStatus : lxdStatusSet) {
             DevStatusObj devStatusObj = new DevStatusObj();
+            devStatusObj.setId(routerId);
             if (lxdStatus.getStatus() == 0) {
                 devStatusObj.setMem(0);
                 devStatusObj.setMemPk(0);
@@ -122,16 +126,19 @@ public class PerfScreenTask implements Job {
             }
             //存入redis
             CommonUtils.storeToRedis(wlid + routerName, String.valueOf(lxdStatus.getCpuTime()));
-            List<PortStatusObj> ports = lxdStatus.getInterfaceList().stream().map(portModel -> {
-                PortStatusObj port = new PortStatusObj();
-                port.setNm(portModel.getName());
-                port.setSt((short) portModel.getStatus());
-                port.setBr(portModel.getByteRecv());
-                port.setBs(portModel.getByteSent());
-                port.setPr(portModel.getPktRecv());
-                port.setPs(portModel.getPktSent());
-                return port;
-            }).collect(Collectors.toList());
+            List<PortStatusObj> ports = new ArrayList<>();
+            for (PortStatus portStatus : lxdStatus.getInterfaceList()) {
+                if (!portStatus.getName().equals("lo")) {
+                    PortStatusObj port = new PortStatusObj();
+                    port.setNm(portStatus.getName());
+                    port.setSt((short) portStatus.getStatus());
+                    port.setBr(portStatus.getByteRecv());
+                    port.setBs(portStatus.getByteSent());
+                    port.setPr(portStatus.getPktRecv());
+                    port.setPs(portStatus.getPktSent());
+                    ports.add(port);
+                }
+            }
             devStatusObj.setPorts(ports);
             screenStatus.setRouterstatus(new BoDevStatus(devStatusObj));
         }
@@ -158,14 +165,15 @@ public class PerfScreenTask implements Job {
         linkStatusObjList.sort(Comparator.comparingLong(LinkStatusObj::getTp));
         List<BoLinkStatus> linkStatuses = new ArrayList<>();
         int length = linkStatusObjList.size();
-        for (int i = 0; i < 5; i++) {
+        int n = Math.min(5, length);
+        for (int i = 0; i < n; i++) {
             BoLinkStatus boLinkStatus = new BoLinkStatus();
             boLinkStatus.setLlid(linkStatusObjList.get(i).getLlid());
             boLinkStatus.setMc(linkInfoMap.get(boLinkStatus.getLlid()));
             boLinkStatus.setSt((byte) 1);
-//            boLinkStatus.setTp(String.valueOf(linkStatusObjList.get(length - 1).getTp()));
-            int ran3 = (int) (Math.random()*1000);
-            boLinkStatus.setTp(String.valueOf(ran3));
+            boLinkStatus.setTp(String.valueOf(linkStatusObjList.get(length - 1).getTp()));
+//            int ran3 = (int) (Math.random()*1000);
+//            boLinkStatus.setTp(String.valueOf(ran3));
             linkStatuses.add(boLinkStatus);
             length--;
         }
