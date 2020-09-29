@@ -112,6 +112,7 @@ public class NetMonitorTask implements Job {
                     } else {
                         linkStatusObj.setSt((byte) 1);
                     }
+                    //TODO
                     long tp = Math.round(throughput);
                     if (tp < 524_288) {
                         linkStatusObj.setTp(0);
