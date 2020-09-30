@@ -13,6 +13,7 @@ import edu.nuaa.nettop.service.MonitorService;
 import edu.nuaa.nettop.service.ScreenService;
 import edu.nuaa.nettop.vo.DDosScreenRequest;
 import edu.nuaa.nettop.vo.NetRequest;
+import edu.nuaa.nettop.vo.OspfScreenRequest;
 import edu.nuaa.nettop.vo.PerfScreenRequest;
 import edu.nuaa.nettop.vo.VrScreenRequest;
 import lombok.extern.slf4j.Slf4j;
@@ -195,8 +196,8 @@ public class NetMonitorController {
     @ResponseBody
     public Response runOspfScreen(@PathVariable("wlid") String wlid) throws MonitorException {
         log.info("Recv router attack screen-> {}", wlid);
-        PerfScreenRequest request = screenService.createPerfScreen(wlid);
-        screenService.addPerformanceScreen(request);
+        OspfScreenRequest request = screenService.createOspfScreen(wlid);
+        screenService.addOspfScreen(request);
         return new Response("ok");
     }
 

@@ -47,6 +47,7 @@ public class OspfScreenTask implements Job {
 
         //测试数据
         BoRouterAttackScreenStatus screenStatus = new BoRouterAttackScreenStatus();
+        screenStatus.setWlid(wlid);
         //攻击路由器名称
         screenStatus.setAttacker(attacker);
         //受害者路由器名称
