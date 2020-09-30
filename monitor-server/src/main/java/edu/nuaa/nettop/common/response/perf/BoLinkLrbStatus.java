@@ -1,7 +1,7 @@
 /*
  * 链路流量容量比信息
  */
-package edu.nuaa.nettop.common.response;
+package edu.nuaa.nettop.common.response.perf;
 
 import java.io.Serializable;
 

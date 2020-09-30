@@ -6,10 +6,10 @@ import edu.nuaa.nettop.common.obj.DevStatusObj;
 import edu.nuaa.nettop.common.obj.LinkStatusObj;
 import edu.nuaa.nettop.common.obj.PortStatusObj;
 import edu.nuaa.nettop.common.response.BoDevStatus;
-import edu.nuaa.nettop.common.response.BoLinkLrbStatus;
+import edu.nuaa.nettop.common.response.perf.BoLinkLrbStatus;
 import edu.nuaa.nettop.common.response.BoLinkStatus;
 import edu.nuaa.nettop.common.response.BoNetServStatus;
-import edu.nuaa.nettop.common.response.BoPerfOptScreenStatus;
+import edu.nuaa.nettop.common.response.perf.BoPerfOptScreenStatus;
 import edu.nuaa.nettop.common.response.BoRestResObj;
 import edu.nuaa.nettop.common.utils.CommonUtils;
 import edu.nuaa.nettop.common.utils.ProxyUtil;
@@ -35,7 +35,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * @author 57387

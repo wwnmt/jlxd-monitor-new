@@ -1,4 +1,4 @@
-package edu.nuaa.nettop.common.response;
+package edu.nuaa.nettop.common.response.ddos;
 
 import java.io.Serializable;
 import java.util.StringJoiner;

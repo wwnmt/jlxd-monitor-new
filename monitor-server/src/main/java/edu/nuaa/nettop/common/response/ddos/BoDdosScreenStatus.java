@@ -1,4 +1,6 @@
-package edu.nuaa.nettop.common.response;
+package edu.nuaa.nettop.common.response.ddos;
+
+import edu.nuaa.nettop.common.response.BoLinkStatus;
 
 import java.io.Serializable;
 import java.util.ArrayList;

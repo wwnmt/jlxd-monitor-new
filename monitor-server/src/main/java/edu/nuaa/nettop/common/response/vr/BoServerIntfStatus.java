@@ -1,7 +1,7 @@
 /*
  * 物理服务器链路流量信息
  */
-package edu.nuaa.nettop.common.response;
+package edu.nuaa.nettop.common.response.vr;
 
 import java.io.Serializable;
 

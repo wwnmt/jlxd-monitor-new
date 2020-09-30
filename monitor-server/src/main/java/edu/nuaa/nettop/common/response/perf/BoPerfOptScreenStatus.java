@@ -1,8 +1,11 @@
 /*
  * 性能优化数字大屏监控数据
  */
-package edu.nuaa.nettop.common.response;
+package edu.nuaa.nettop.common.response.perf;
 
+import edu.nuaa.nettop.common.response.BoDevStatus;
+import edu.nuaa.nettop.common.response.BoLinkStatus;
+import edu.nuaa.nettop.common.response.BoNetServStatus;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

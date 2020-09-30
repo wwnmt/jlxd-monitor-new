@@ -27,9 +27,11 @@ import edu.nuaa.nettop.model.ServPort;
 import edu.nuaa.nettop.quartz.TaskScheduler;
 import edu.nuaa.nettop.service.ScreenService;
 import edu.nuaa.nettop.task.DDosScreenTask;
+import edu.nuaa.nettop.task.OspfScreenTask;
 import edu.nuaa.nettop.task.PerfScreenTask;
 import edu.nuaa.nettop.task.VrScreenTask;
 import edu.nuaa.nettop.vo.DDosScreenRequest;
+import edu.nuaa.nettop.vo.OspfScreenRequest;
 import edu.nuaa.nettop.vo.PerfScreenRequest;
 import edu.nuaa.nettop.vo.VrScreenRequest;
 import lombok.extern.slf4j.Slf4j;
@@ -201,6 +203,44 @@ public class ScreenServiceImpl implements ScreenService {
         request.setRouterName(pre + devName);
         request.setRouterDeployServer(serverIp);
         return request;
+    }
+
+    @Override
+    public OspfScreenRequest createOspfScreen(String wlid) throws MonitorException {
+        OspfScreenRequest request = new OspfScreenRequest();
+        request.setWlid(wlid);
+        request.setPre("n3");
+        request.setAttacker("r1");
+        request.setVictim("r11");
+        request.setVicServerIp("192.168.31.14");
+        request.setAttServerIp("192.168.31.14");
+        return request;
+    }
+
+    @Override
+    public void addOspfScreen(OspfScreenRequest request) throws MonitorException {
+        //TODO 验证参数
+        log.info("Recv router attack screen request-> {}", JSON.toJSONString(request));
+        String jobName = request.getWlid();
+        String jobGroup = TaskType.ROUTER_ATTACK_SCREEN.getDesc();
+        try {
+            //判断任务已存在
+            if (taskScheduler.checkExists(jobName, jobGroup)) {
+                throw new MonitorException(String.format("Job已经存在, jobName:{%s},jobGroup:{%s}", jobName, jobGroup));
+            }
+            //配置参数
+            JobDataMap jobDataMap = new JobDataMap();
+            jobDataMap.put("wlid", request.getWlid());
+            jobDataMap.put("pre", request.getPre());
+            jobDataMap.put("attacker", request.getAttacker());
+            jobDataMap.put("attServerIp", request.getAttServerIp());
+            jobDataMap.put("victim", request.getVictim());
+            jobDataMap.put("vimServerIp", request.getVicServerIp());
+            //提交任务
+            taskScheduler.publishJob(jobName, jobGroup, jobDataMap, 5, OspfScreenTask.class);
+        } catch (SchedulerException e) {
+            throw new MonitorException(e.getMessage());
+        }
     }
 
     @Override
