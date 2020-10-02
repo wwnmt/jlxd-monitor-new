@@ -90,7 +90,8 @@ public class MonitorServiceImpl implements MonitorService {
 //        }).collect(Collectors.toList());
         List<Node> nodes = new ArrayList<>();
         for (NodeDO nodeDO : nodeDOList) {
-            if (nodeDO.getSblx().equals("gj_physical")) {
+            if (nodeDO.getSblx().equals("gj_physical")
+                    || nodeDO.getSblx().equals("Bridge")) {
                 continue;
             }
             Node node = new Node();

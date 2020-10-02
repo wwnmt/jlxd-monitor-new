@@ -211,4 +211,16 @@ public class NetMonitorController {
         screenService.deleteScreen(wlid, TaskType.ROUTER_ATTACK_SCREEN.getDesc());
         return new Response("ok");
     }
+
+    /**
+     * 路由器路由表推送接口
+     */
+    @GetMapping("/screen/routerattack/getvictim/{wlid}/{sbid}")
+    @ResponseBody
+    public Response runGetRoutingTable1(@PathVariable("wlid") String wlid,
+                                        @PathVariable("sbid") String sbid) throws MonitorException {
+        screenService.cancelScreen(wlid, TaskType.ROUTER_ATTACK_SCREEN.getDesc());
+        screenService.deleteScreen(wlid, TaskType.ROUTER_ATTACK_SCREEN.getDesc());
+        return new Response("ok");
+    }
 }

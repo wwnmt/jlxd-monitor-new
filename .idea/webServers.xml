@@ -16,6 +16,13 @@
           </advancedOptions>
         </fileTransfer>
       </webServer>
+      <webServer id="fe5e96c8-9b9c-43e2-afb4-c1e3c0728877" name="lab4">
+        <fileTransfer rootFolder="/home/nuaa/wuweinan/jlxd-monitor-new" accessType="SFTP" host="192.168.31.14" port="22" sshConfigId="409b4674-bd8a-49f8-a755-49509814a7e1" sshConfig="nuaa@192.168.31.14:22 password">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" passiveMode="true" shareSSLContext="true" />
+          </advancedOptions>
+        </fileTransfer>
+      </webServer>
     </option>
   </component>
 </project>
