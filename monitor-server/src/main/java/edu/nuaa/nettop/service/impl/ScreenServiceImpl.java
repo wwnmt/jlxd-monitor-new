@@ -6,8 +6,9 @@ import edu.nuaa.nettop.common.constant.TaskType;
 import edu.nuaa.nettop.common.exception.MonitorException;
 import edu.nuaa.nettop.common.obj.NetPortObj;
 import edu.nuaa.nettop.common.obj.ServerObj;
-import edu.nuaa.nettop.common.utils.CommonUtils;
-import edu.nuaa.nettop.common.utils.ProxyUtil;
+import edu.nuaa.nettop.task.RtTask;
+import edu.nuaa.nettop.utils.CommonUtils;
+import edu.nuaa.nettop.utils.ProxyUtil;
 import edu.nuaa.nettop.dao.go.DeployDOMapper;
 import edu.nuaa.nettop.dao.go.PhysicalPortDOMapper;
 import edu.nuaa.nettop.dao.go.ServerDOMapper;
@@ -20,7 +21,6 @@ import edu.nuaa.nettop.dao.main.ServiceNetDOMapper;
 import edu.nuaa.nettop.dao.main.TaskDOMapper;
 import edu.nuaa.nettop.entity.DDosTaskDO;
 import edu.nuaa.nettop.entity.LinkDO;
-import edu.nuaa.nettop.entity.PhysicalDevDO;
 import edu.nuaa.nettop.entity.PhysicalPortDO;
 import edu.nuaa.nettop.entity.TaskForDDosDO;
 import edu.nuaa.nettop.model.ServPort;
@@ -65,11 +65,19 @@ public class ScreenServiceImpl implements ScreenService {
     private final ServerDOMapper serverDOMapper;
     private final LinkDOMapper linkDOMapper;
     private final PortDOMapper portDOMapper;
-    private final PhysicalDevDOMapper physicalDevDOMapper;
     private final PhysicalPortDOMapper physicalPortDOMapper;
 
     @Autowired
-    public ScreenServiceImpl(TaskScheduler taskScheduler, TaskDOMapper taskDOMapper, DeployDOMapper deployDOMapper, ServiceNetDOMapper serviceNetDOMapper, NodeDOMapper nodeDOMapper, DDosTdDOMapper dDosTdDOMapper, ServerDOMapper serverDOMapper, LinkDOMapper linkDOMapper, PortDOMapper portDOMapper, PhysicalDevDOMapper physicalDevDOMapper, PhysicalPortDOMapper physicalPortDOMapper) {
+    public ScreenServiceImpl(TaskScheduler taskScheduler,
+                             TaskDOMapper taskDOMapper,
+                             DeployDOMapper deployDOMapper,
+                             ServiceNetDOMapper serviceNetDOMapper,
+                             NodeDOMapper nodeDOMapper,
+                             DDosTdDOMapper dDosTdDOMapper,
+                             ServerDOMapper serverDOMapper,
+                             LinkDOMapper linkDOMapper,
+                             PortDOMapper portDOMapper,
+                             PhysicalPortDOMapper physicalPortDOMapper) {
         this.taskScheduler = taskScheduler;
         this.taskDOMapper = taskDOMapper;
         this.deployDOMapper = deployDOMapper;
@@ -79,7 +87,6 @@ public class ScreenServiceImpl implements ScreenService {
         this.serverDOMapper = serverDOMapper;
         this.linkDOMapper = linkDOMapper;
         this.portDOMapper = portDOMapper;
-        this.physicalDevDOMapper = physicalDevDOMapper;
         this.physicalPortDOMapper = physicalPortDOMapper;
     }
 
@@ -319,6 +326,32 @@ public class ScreenServiceImpl implements ScreenService {
     }
 
     @Override
+    public void runGetRoutingTable(String wlid, String sbid) throws MonitorException{
+        String pre = serviceNetDOMapper.getYxidByPrimaryKey(wlid);
+        String name = nodeDOMapper.findNodeNameByPrimaryKey(sbid);
+
+        String deviceName = pre + name;
+        String serverIp = deployDOMapper.queryServerIpByDeviceName(deviceName);
+        String jobName = wlid + sbid;
+        String jobGroup = TaskType.ROUTING_TABLE.getDesc();
+        try {
+            //判断任务已存在
+            if (taskScheduler.checkExists(jobName, jobGroup)) {
+                throw new MonitorException(String.format("Job已经存在, jobName:{%s},jobGroup:{%s}", jobName, jobGroup));
+            }
+            //配置参数
+            JobDataMap jobDataMap = new JobDataMap();
+            jobDataMap.put("wlid", wlid);
+            jobDataMap.put("serverIp", serverIp);
+            jobDataMap.put("nodeName", deviceName);
+            //提交任务
+            taskScheduler.publishJob(jobName, jobGroup, jobDataMap, 5, RtTask.class);
+        } catch (SchedulerException e) {
+            throw new MonitorException(e.getMessage());
+        }
+    }
+
+    @Override
     public void cancelScreen(String jobName, String jobGroup) throws MonitorException {
         taskScheduler.cancelTask(jobName, jobGroup);
     }
@@ -334,12 +367,10 @@ public class ScreenServiceImpl implements ScreenService {
 
     @Override
     public ServerObj getPhysicalInterfaceInfo(String wlid, String sbid) throws MonitorException {
-        // PhysicalDevDO physicalDevDO = physicalDevDOMapper.selectByPrimaryKey(sbid);
         String pre = serviceNetDOMapper.getYxidByPrimaryKey(wlid);
         String nodeName = nodeDOMapper.findNodeNameByPrimaryKey(sbid);
         String serverIp = deployDOMapper.queryServerIpByDeviceName(
                 pre + nodeName);
-        // String physicalIntName = physicalDevDO.getLjsb();
         ServPort servPort = ProxyUtil.getServPort(serverIp, serverIp);
         ServerObj serverObj = new ServerObj();
         serverObj.setMc(serverIp);

@@ -8,7 +8,7 @@ import edu.nuaa.nettop.common.obj.ServerObj;
 import edu.nuaa.nettop.common.obj.ServerReqObj;
 import edu.nuaa.nettop.common.obj.ServerReqParam;
 import edu.nuaa.nettop.common.response.Response;
-import edu.nuaa.nettop.common.utils.CommonUtils;
+import edu.nuaa.nettop.utils.CommonUtils;
 import edu.nuaa.nettop.service.MonitorService;
 import edu.nuaa.nettop.service.ScreenService;
 import edu.nuaa.nettop.vo.DDosScreenRequest;
@@ -213,14 +213,25 @@ public class NetMonitorController {
     }
 
     /**
-     * 路由器路由表推送接口
+     * 路由器路由表推送启动接口
      */
     @GetMapping("/screen/routerattack/getvictim/{wlid}/{sbid}")
     @ResponseBody
     public Response runGetRoutingTable1(@PathVariable("wlid") String wlid,
                                         @PathVariable("sbid") String sbid) throws MonitorException {
-        screenService.cancelScreen(wlid, TaskType.ROUTER_ATTACK_SCREEN.getDesc());
-        screenService.deleteScreen(wlid, TaskType.ROUTER_ATTACK_SCREEN.getDesc());
+        screenService.runGetRoutingTable(wlid, sbid);
+        return new Response("ok");
+    }
+
+    /**
+     * 路由器路由表推送停止接口
+     */
+    @GetMapping("/screen/routerattack/stopvictim/{wlid}/{sbid}")
+    @ResponseBody
+    public Response cancelGetRoutingTable1(@PathVariable("wlid") String wlid,
+                                        @PathVariable("sbid") String sbid) throws MonitorException {
+        screenService.cancelScreen(wlid+sbid, TaskType.ROUTING_TABLE.getDesc());
+        screenService.deleteScreen(wlid+sbid, TaskType.ROUTING_TABLE.getDesc());
         return new Response("ok");
     }
 }

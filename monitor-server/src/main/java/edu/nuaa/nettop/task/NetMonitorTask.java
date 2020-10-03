@@ -8,8 +8,8 @@ import edu.nuaa.nettop.common.obj.LinkStatusObj;
 import edu.nuaa.nettop.common.obj.NetStatusObj;
 import edu.nuaa.nettop.common.response.BoNetStatus;
 import edu.nuaa.nettop.common.response.BoRestResObj;
-import edu.nuaa.nettop.common.utils.CommonUtils;
-import edu.nuaa.nettop.common.utils.ProxyUtil;
+import edu.nuaa.nettop.utils.CommonUtils;
+import edu.nuaa.nettop.utils.ProxyUtil;
 import edu.nuaa.nettop.config.StaticConfig;
 import edu.nuaa.nettop.model.LxdStatus;
 import edu.nuaa.nettop.model.PortStatus;
@@ -88,6 +88,12 @@ public class NetMonitorTask implements Job {
                 errDevs = response.getErrDevs();
                 lxdStatusList.addAll(response.getLxdStatuses());
             }
+
+            Map<String, LxdStatus> lxdStatusMap = new HashMap<>();
+            for (LxdStatus lxdStatus : lxdStatusList) {
+                lxdStatusMap.put(lxdStatus.getName(), lxdStatus);
+            }
+
             Map<String, Long> newDataMap = getData(lxdStatusList);
 
             //计算真正的间隔时间
@@ -113,6 +119,11 @@ public class NetMonitorTask implements Job {
                         linkStatusObj.setSt((byte) 1);
                     }
                     //TODO
+                    if (checkPortStatus(lxdStatusMap, link))
+                        linkStatusObj.setSt((byte) 1);
+                    else
+                        linkStatusObj.setSt((byte) 0);
+
                     long tp = Math.round(throughput);
                     if (tp < 524_288) {
                         linkStatusObj.setTp(0);
@@ -151,6 +162,25 @@ public class NetMonitorTask implements Job {
         } catch (MonitorException e) {
             e.printStackTrace();
         }
+    }
+
+    private boolean checkPortStatus(Map<String, LxdStatus> lxdStatusMap, Link link) {
+        LxdStatus from = lxdStatusMap.get(link.getFrom());
+        LxdStatus to = lxdStatusMap.get(link.getTo());
+        if (from == null || to == null)
+            return false;
+        int count = 0;
+        for (PortStatus portStatus : from.getInterfaceList()) {
+            if (portStatus.getName().equals(link.getFromPort()))
+                if (portStatus.getStatus() == 1)
+                    count++;
+        }
+        for (PortStatus portStatus : to.getInterfaceList()) {
+            if (portStatus.getName().equals(link.getToPort()))
+                if (portStatus.getStatus() == 1)
+                    count++;
+        }
+        return count == 2;
     }
 
     private void sendToWeb(BoNetStatus boNetStatus) {

@@ -5,7 +5,7 @@ import edu.nuaa.nettop.common.constant.TaskType;
 import edu.nuaa.nettop.common.exception.MonitorException;
 import edu.nuaa.nettop.common.model.Link;
 import edu.nuaa.nettop.common.model.Node;
-import edu.nuaa.nettop.common.utils.CommonUtils;
+import edu.nuaa.nettop.utils.CommonUtils;
 import edu.nuaa.nettop.dao.go.DeployDOMapper;
 import edu.nuaa.nettop.dao.main.LinkDOMapper;
 import edu.nuaa.nettop.dao.main.NodeDOMapper;

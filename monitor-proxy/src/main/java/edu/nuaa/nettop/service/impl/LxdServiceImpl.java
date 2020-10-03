@@ -69,6 +69,8 @@ public class LxdServiceImpl implements LxdService {
                 }
                 line = line.replaceAll("\\s+", " ");
                 String[] lines = line.split(" ");
+                if (lines[0].startsWith("1."))
+                    continue;
                 RoutingTable.RouteContent content = new RoutingTable.RouteContent(
                         lines[0], lines[1], lines[2], lines[3],
                         lines[4], lines[5], lines[7]

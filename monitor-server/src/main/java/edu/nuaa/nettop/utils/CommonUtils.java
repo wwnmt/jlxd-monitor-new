@@ -1,4 +1,4 @@
-package edu.nuaa.nettop.common.utils;
+package edu.nuaa.nettop.utils;
 
 
 import lombok.extern.slf4j.Slf4j;

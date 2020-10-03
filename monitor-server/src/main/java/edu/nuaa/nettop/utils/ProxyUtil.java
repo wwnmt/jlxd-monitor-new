@@ -1,6 +1,7 @@
-package edu.nuaa.nettop.common.utils;
+package edu.nuaa.nettop.utils;
 
 import edu.nuaa.nettop.common.exception.MonitorException;
+import edu.nuaa.nettop.model.RoutingTable;
 import edu.nuaa.nettop.model.ServMem;
 import edu.nuaa.nettop.model.ServPort;
 import edu.nuaa.nettop.vo.lxd.LxdRequest;
@@ -25,6 +26,15 @@ import java.util.Map;
 @Slf4j
 @SuppressWarnings("all")
 public class ProxyUtil {
+
+    public static RoutingTable getRoutingTable(String serverIp, String nodeName) {
+        RestTemplate restTemplate = new RestTemplate();
+        Map<String, Object> params = new HashMap<>();
+        params.put("name", nodeName);
+        String url = "http://" + serverIp + ":2081/lxd/rt/{name}";
+        ResponseEntity<RoutingTable> responseEntity = restTemplate.getForEntity(url, RoutingTable.class, params);
+        return responseEntity.getBody();
+    }
 
     public static Long getTcpOut(String serverIp, String deviceIp) {
 

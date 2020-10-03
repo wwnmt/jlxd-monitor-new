@@ -17,7 +17,8 @@ public enum TaskType {
     DDOS_SCREEN(2, "ddos_screen"),
     VR_SCREEN(3, "vr_screen"),
     PRO_SCREEN(4, "pro_screen"),
-    ROUTER_ATTACK_SCREEN(5, "ospf_attack_screen");
+    ROUTER_ATTACK_SCREEN(5, "ospf_attack_screen"),
+    ROUTING_TABLE(6, "rt");
 
     private final int code;
     private final String desc;

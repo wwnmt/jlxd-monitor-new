@@ -2,6 +2,7 @@ package edu.nuaa.nettop.service;
 
 import edu.nuaa.nettop.common.exception.MonitorException;
 import edu.nuaa.nettop.common.obj.ServerObj;
+import edu.nuaa.nettop.model.RoutingTable;
 import edu.nuaa.nettop.vo.DDosScreenRequest;
 import edu.nuaa.nettop.vo.OspfScreenRequest;
 import edu.nuaa.nettop.vo.PerfScreenRequest;
@@ -35,6 +36,8 @@ public interface ScreenService {
     OspfScreenRequest createOspfScreen(String wlid) throws MonitorException;
 
     void addOspfScreen(OspfScreenRequest request) throws MonitorException;
+
+    void runGetRoutingTable(String wlid, String sbid) throws MonitorException;
 
     void cancelScreen(String jobName, String jobGroup) throws MonitorException;
 
