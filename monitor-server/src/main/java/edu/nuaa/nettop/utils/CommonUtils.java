@@ -10,6 +10,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.RedisSerializer;
 import redis.clients.jedis.JedisPoolConfig;
 
+import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
 
@@ -44,6 +45,10 @@ public class CommonUtils {
 
     public static String getFromRedis(String k) {
         return redisTemplate.opsForValue().get(k);
+    }
+
+    public static List<String> getListFromRedis(String k) {
+        return redisTemplate.opsForList().range(k, 0, -1);
     }
 
     public static void delInRedis(String k) {

@@ -243,6 +243,17 @@ public class ScreenServiceImpl implements ScreenService {
             jobDataMap.put("attServerIp", request.getAttServerIp());
             jobDataMap.put("victim", request.getVictim());
             jobDataMap.put("vimServerIp", request.getVicServerIp());
+
+            if (Constants.routingRouter.containsKey(request.getWlid())) {
+                String nodeName = serviceNetDOMapper.getYxidByPrimaryKey(request.getWlid()) + nodeDOMapper.findNodeNameByPrimaryKey(Constants.routingRouter.get(request.getWlid())),
+                        serverIp = deployDOMapper.queryServerIpByDeviceName(nodeName);
+
+                jobDataMap.put("selected", nodeName);
+                jobDataMap.put("selectedServerIp", serverIp);
+            } else {
+                jobDataMap.put("selected", "");
+                jobDataMap.put("selectedServerIp", "");
+            }
             //提交任务
             taskScheduler.publishJob(jobName, jobGroup, jobDataMap, 5, OspfScreenTask.class);
         } catch (SchedulerException e) {

@@ -20,6 +20,8 @@ public class BoRouterAttackScreenStatus implements Serializable {
 	private String wlid;
 	
 	private String victim;   //受害者路由器名称
+
+	private List<BoVictimRouterItem> oldrouters = new ArrayList<>(); // 指定受害者路由器初始路由表信息
 	
 	private List<BoVictimRouterItem> routers = new ArrayList<BoVictimRouterItem>();  //指定受害者路由器路由表信息
 	
@@ -28,8 +30,16 @@ public class BoRouterAttackScreenStatus implements Serializable {
 	//攻击路由器的攻击报文
 	private List<BoOSPFAttackPack> attackpacks = new ArrayList<BoOSPFAttackPack>();
 	
-	//所有网络报文	
+	//所有网络报文
 	private List<BoOSPFPackage> packs = new ArrayList<BoOSPFPackage>();
+
+	public List<BoVictimRouterItem> getOldrouters() {
+		return oldrouters;
+	}
+
+	public void setOldrouters(List<BoVictimRouterItem> originrouters) {
+		this.oldrouters = originrouters;
+	}
 
 	public String getWlid() {
 		return wlid;
@@ -39,7 +49,6 @@ public class BoRouterAttackScreenStatus implements Serializable {
 		this.wlid = wlid;
 	}
 
-	
 	public String getVictim() {
 		return victim;
 	}

@@ -34,5 +34,9 @@ public class RoutingTable {
         private String metric;
         private String ref;
         private String iFace;
+
+        public String briefString() {
+            return String.format("%s:%s:%s", dest, gateway, mask);
+        }
     }
 }

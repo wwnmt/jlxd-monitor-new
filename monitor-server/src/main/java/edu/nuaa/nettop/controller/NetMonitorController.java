@@ -17,6 +17,7 @@ import edu.nuaa.nettop.vo.OspfScreenRequest;
 import edu.nuaa.nettop.vo.PerfScreenRequest;
 import edu.nuaa.nettop.vo.VrScreenRequest;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.tomcat.util.bcel.Const;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -179,7 +180,7 @@ public class NetMonitorController {
     /**
      * 性能优化数字大屏 用户指定监控路由器
      */
-    @GetMapping("perfopt/monitorrouter/{wlid}/{sbid}")
+    @GetMapping("/perfopt/monitorrouter/{wlid}/{sbid}")
     @ResponseBody
     public Response adddev(@PathVariable("wlid") String wlid,
                            @PathVariable String sbid) throws MonitorException {
@@ -219,7 +220,14 @@ public class NetMonitorController {
     @ResponseBody
     public Response runGetRoutingTable1(@PathVariable("wlid") String wlid,
                                         @PathVariable("sbid") String sbid) throws MonitorException {
+        Constants.routingRouter.put(wlid, sbid);
+        log.info("Recv new routing -> {} {}", wlid, sbid);
+
         screenService.runGetRoutingTable(wlid, sbid);
+
+        cancelOspfScreen(wlid);
+        runOspfScreen(wlid);
+
         return new Response("ok");
     }
 
@@ -230,8 +238,16 @@ public class NetMonitorController {
     @ResponseBody
     public Response cancelGetRoutingTable1(@PathVariable("wlid") String wlid,
                                         @PathVariable("sbid") String sbid) throws MonitorException {
+
+        Constants.routingRouter.remove(wlid);
+        log.info("Del routing -> {} {}", wlid, sbid);
+
         screenService.cancelScreen(wlid+sbid, TaskType.ROUTING_TABLE.getDesc());
         screenService.deleteScreen(wlid+sbid, TaskType.ROUTING_TABLE.getDesc());
+
+        cancelOspfScreen(wlid);
+        runOspfScreen(wlid);
+
         return new Response("ok");
     }
 }

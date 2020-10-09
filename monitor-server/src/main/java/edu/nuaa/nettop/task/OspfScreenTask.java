@@ -1,6 +1,7 @@
 package edu.nuaa.nettop.task;
 
 import com.alibaba.fastjson.JSON;
+import edu.nuaa.nettop.common.constant.Constants;
 import edu.nuaa.nettop.common.response.BoRestResObj;
 import edu.nuaa.nettop.common.response.ddos.BoDdosScreenStatus;
 import edu.nuaa.nettop.common.response.ospf.BoOSPFAttackPack;
@@ -8,6 +9,9 @@ import edu.nuaa.nettop.common.response.ospf.BoOSPFPackage;
 import edu.nuaa.nettop.common.response.ospf.BoRouterAttackScreenStatus;
 import edu.nuaa.nettop.common.response.ospf.BoVictimRouterItem;
 import edu.nuaa.nettop.config.StaticConfig;
+import edu.nuaa.nettop.model.RoutingTable;
+import edu.nuaa.nettop.utils.CommonUtils;
+import edu.nuaa.nettop.utils.ProxyUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.quartz.Job;
 import org.quartz.JobDataMap;
@@ -43,7 +47,10 @@ public class OspfScreenTask implements Job {
         String victim = jobDataMap.getString("victim");
         String vimServerIp = jobDataMap.getString("vimServerIp");
 
-        log.info("RUn ospf screen task-> {}", wlid);
+        String selected = jobDataMap.getString("selected");
+        String selectedServerIp = jobDataMap.getString("selectedServerIp");
+
+        log.info("Run ospf screen task-> {}", wlid);
 
         //测试数据
         BoRouterAttackScreenStatus screenStatus = new BoRouterAttackScreenStatus();
@@ -52,34 +59,92 @@ public class OspfScreenTask implements Job {
         screenStatus.setAttacker(attacker);
         //受害者路由器名称
         screenStatus.setVictim(victim);
+        //受害者路由器初始路由表信息 SNMP
+        List<BoVictimRouterItem> originrouters = new ArrayList<>();
         //受害者路由器路由表信息 SNMP
         List<BoVictimRouterItem> routers = new ArrayList<>();
-        for (int i = 0; i < 3; i++) {
-            BoVictimRouterItem item = new BoVictimRouterItem();
-            item.setItem("network 192.168." + i + ".0/24 area 0");
-            item.setStatus(i);
-            routers.add(item);
+        if (!selected.equals("") && !selectedServerIp.equals("")) {
+            RoutingTable routingTable = ProxyUtil.getRoutingTable(selectedServerIp, selected);
+            for (RoutingTable.RouteContent content : routingTable.getContents()) {
+                BoVictimRouterItem item = new BoVictimRouterItem();
+                item.setItem(content.briefString());
+                item.setStatus(0);
+                originrouters.add(item);
+            }
+
+            screenStatus.setOldrouters(originrouters);
+
+            RoutingTable routingTable2 = ProxyUtil.getRoutingTable(selectedServerIp, selected);
+            for (RoutingTable.RouteContent content : routingTable2.getContents()) {
+                BoVictimRouterItem item = new BoVictimRouterItem();
+                item.setItem(content.briefString());
+                item.setStatus(1);
+                routers.add(item);
+            }
+            screenStatus.setRouters(routers);
+        } else {
+            for (int i = 0; i < 3; i++) {
+                BoVictimRouterItem item = new BoVictimRouterItem();
+                item.setItem("network 192.168." + i + ".0/24 area 0");
+                item.setStatus(0);
+                originrouters.add(item);
+            }
+            screenStatus.setOldrouters(originrouters);
+            for (int i = 0; i < 3; i++) {
+                BoVictimRouterItem item = new BoVictimRouterItem();
+                item.setItem("network 192.168." + i + ".0/24 area 0");
+                item.setStatus(i);
+                routers.add(item);
+            }
+            screenStatus.setRouters(routers);
         }
-        screenStatus.setRouters(routers);
         //攻击路由器的攻击报文 读取redis
         List<BoOSPFAttackPack> attackpacks = new ArrayList<>();
-        for (int i = 0; i < 3; i++) {
+//        for (int i = 0; i < 3; i++) {
+//            BoOSPFAttackPack pack = new BoOSPFAttackPack();
+//            pack.setTm(String.valueOf(i + 1));
+//            pack.setSmip("10.0.1." + i);
+//            pack.setPack("attack pack test" + i);
+//            attackpacks.add(pack);
+//        }
+        String firstAttack = CommonUtils.getFromRedis("trigger_lsa"),
+                secondAttack = CommonUtils.getFromRedis("disguised_lsa");
+        if (firstAttack != null && !firstAttack.isEmpty()) {
             BoOSPFAttackPack pack = new BoOSPFAttackPack();
-            pack.setTm(String.valueOf(i + 1));
-            pack.setSmip("10.0.1." + i);
-            pack.setPack("attack pack test" + i);
+            pack.setTm("1");
+            pack.setSmip(attacker);
+            pack.setPack(firstAttack);
             attackpacks.add(pack);
         }
+
+        if (secondAttack != null && !secondAttack.isEmpty()) {
+            BoOSPFAttackPack pack = new BoOSPFAttackPack();
+            pack.setTm("2");
+            pack.setSmip(attacker);
+            pack.setPack(secondAttack);
+            attackpacks.add(pack);
+        }
+
         screenStatus.setAttackpacks(attackpacks);
-        //所有网络报文 从李子通程序获取
+        //所有网络报文 从李梓铜程序获取
         List<BoOSPFPackage> packs = new ArrayList<>();
-        for (int i = 0; i < 10; i++) {
+//        for (int i = 0; i < 10; i++) {
+//            BoOSPFPackage pack = new BoOSPFPackage();
+//            pack.setTm(String.valueOf(i));
+//            pack.setSeqno(String.valueOf(i+3));
+//            pack.setPtype("Hello");
+//            pack.setPack("OSPF test pack" + i);
+//            packs.add(pack);
+//        }
+        int i = 1;
+        for (String packet : CommonUtils.getListFromRedis("lsa_from_attack_router")) {
             BoOSPFPackage pack = new BoOSPFPackage();
             pack.setTm(String.valueOf(i));
             pack.setSeqno(String.valueOf(i+3));
-            pack.setPtype("Hello");
-            pack.setPack("OSPF test pack" + i);
+            pack.setPtype("OSPF");
+            pack.setPack(packet);
             packs.add(pack);
+            i++;
         }
         screenStatus.setPacks(packs);
         log.info("OSPF Data-> {}", JSON.toJSONString(screenStatus));

@@ -1,6 +1,7 @@
 package edu.nuaa.nettop.common.constant;
 
 import edu.nuaa.nettop.common.obj.ServerReqObj;
+import edu.nuaa.nettop.common.response.ospf.BoVictimRouterItem;
 
 import java.util.List;
 import java.util.Map;
@@ -20,6 +21,9 @@ public final class Constants {
     //Perf路由器监控集合
     //key:wlid value:sbid
     public static final Map<String, String> perfDevMap = new ConcurrentHashMap<>();
+
+    // Rt监控路由器
+    public static final Map<String, String> routingRouter = new ConcurrentHashMap<>();
 
     //错误信息常量
     public static class ErrMsg {
