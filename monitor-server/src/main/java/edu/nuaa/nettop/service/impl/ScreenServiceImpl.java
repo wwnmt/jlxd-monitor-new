@@ -6,6 +6,8 @@ import edu.nuaa.nettop.common.constant.TaskType;
 import edu.nuaa.nettop.common.exception.MonitorException;
 import edu.nuaa.nettop.common.obj.NetPortObj;
 import edu.nuaa.nettop.common.obj.ServerObj;
+import edu.nuaa.nettop.entity.*;
+import edu.nuaa.nettop.model.RoutingTable;
 import edu.nuaa.nettop.task.RtTask;
 import edu.nuaa.nettop.utils.CommonUtils;
 import edu.nuaa.nettop.utils.ProxyUtil;
@@ -19,10 +21,6 @@ import edu.nuaa.nettop.dao.main.PhysicalDevDOMapper;
 import edu.nuaa.nettop.dao.main.PortDOMapper;
 import edu.nuaa.nettop.dao.main.ServiceNetDOMapper;
 import edu.nuaa.nettop.dao.main.TaskDOMapper;
-import edu.nuaa.nettop.entity.DDosTaskDO;
-import edu.nuaa.nettop.entity.LinkDO;
-import edu.nuaa.nettop.entity.PhysicalPortDO;
-import edu.nuaa.nettop.entity.TaskForDDosDO;
 import edu.nuaa.nettop.model.ServPort;
 import edu.nuaa.nettop.quartz.TaskScheduler;
 import edu.nuaa.nettop.service.ScreenService;
@@ -253,6 +251,17 @@ public class ScreenServiceImpl implements ScreenService {
             } else {
                 jobDataMap.put("selected", "");
                 jobDataMap.put("selectedServerIp", "");
+            }
+
+            if (!Constants.podRoutings.containsKey(request.getWlid())) {
+                Map<String, RoutingTable> routings = new HashMap<>();
+                String pre = serviceNetDOMapper.getYxidByPrimaryKey(request.getWlid());
+                for (NodeDO node : nodeDOMapper.findNodeByWlid(request.getWlid())) {
+                    String nodeName = pre + node.getSbmc(),
+                            serverIp = deployDOMapper.queryServerIpByDeviceName(nodeName);
+                    routings.put(nodeName, ProxyUtil.getRoutingTable(serverIp, nodeName));
+                }
+                Constants.podRoutings.put(request.getWlid(), routings);
             }
             //提交任务
             taskScheduler.publishJob(jobName, jobGroup, jobDataMap, 5, OspfScreenTask.class);

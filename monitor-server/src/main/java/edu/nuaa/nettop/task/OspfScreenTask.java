@@ -1,6 +1,7 @@
 package edu.nuaa.nettop.task;
 
 import com.alibaba.fastjson.JSON;
+import com.mchange.v1.util.ArrayUtils;
 import edu.nuaa.nettop.common.constant.Constants;
 import edu.nuaa.nettop.common.response.BoRestResObj;
 import edu.nuaa.nettop.common.response.ddos.BoDdosScreenStatus;
@@ -13,6 +14,7 @@ import edu.nuaa.nettop.model.RoutingTable;
 import edu.nuaa.nettop.utils.CommonUtils;
 import edu.nuaa.nettop.utils.ProxyUtil;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 import org.quartz.Job;
 import org.quartz.JobDataMap;
 import org.quartz.JobExecutionContext;
@@ -64,12 +66,20 @@ public class OspfScreenTask implements Job {
         //受害者路由器路由表信息 SNMP
         List<BoVictimRouterItem> routers = new ArrayList<>();
         if (!selected.equals("") && !selectedServerIp.equals("")) {
-            RoutingTable routingTable = ProxyUtil.getRoutingTable(selectedServerIp, selected);
-            for (RoutingTable.RouteContent content : routingTable.getContents()) {
-                BoVictimRouterItem item = new BoVictimRouterItem();
-                item.setItem(content.briefString());
-                item.setStatus(0);
-                originrouters.add(item);
+            RoutingTable routingTable = null;
+            if (Constants.podRoutings.containsKey(wlid)) {
+                routingTable = Constants.podRoutings.get(wlid).get(selected);
+
+                if (routingTable != null) {
+                    for (RoutingTable.RouteContent content : routingTable.getContents()) {
+                        BoVictimRouterItem item = new BoVictimRouterItem();
+                        item.setItem(content.briefString());
+                        item.setStatus(0);
+                        originrouters.add(item);
+                    }
+                } else {
+                    log.info(selected);
+                }
             }
 
             screenStatus.setOldrouters(originrouters);
@@ -78,9 +88,15 @@ public class OspfScreenTask implements Job {
             for (RoutingTable.RouteContent content : routingTable2.getContents()) {
                 BoVictimRouterItem item = new BoVictimRouterItem();
                 item.setItem(content.briefString());
-                item.setStatus(1);
+                if (routingTable != null && routingTable.getContents().contains(content)) {
+                    item.setStatus(0);
+                } else {
+                    item.setStatus(1);
+                }
+
                 routers.add(item);
             }
+
             screenStatus.setRouters(routers);
         } else {
             for (int i = 0; i < 3; i++) {
