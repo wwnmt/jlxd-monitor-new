@@ -6,9 +6,12 @@ import edu.nuaa.nettop.common.constant.TaskType;
 import edu.nuaa.nettop.common.exception.MonitorException;
 import edu.nuaa.nettop.common.obj.NetPortObj;
 import edu.nuaa.nettop.common.obj.ServerObj;
-import edu.nuaa.nettop.entity.*;
+import edu.nuaa.nettop.entity.DDosTaskDO;
+import edu.nuaa.nettop.entity.LinkDO;
+import edu.nuaa.nettop.entity.NodeDO;
+import edu.nuaa.nettop.entity.PhysicalPortDO;
+import edu.nuaa.nettop.entity.TaskForDDosDO;
 import edu.nuaa.nettop.model.RoutingTable;
-import edu.nuaa.nettop.task.RtTask;
 import edu.nuaa.nettop.utils.CommonUtils;
 import edu.nuaa.nettop.utils.ProxyUtil;
 import edu.nuaa.nettop.dao.go.DeployDOMapper;
@@ -17,7 +20,6 @@ import edu.nuaa.nettop.dao.go.ServerDOMapper;
 import edu.nuaa.nettop.dao.main.DDosTdDOMapper;
 import edu.nuaa.nettop.dao.main.LinkDOMapper;
 import edu.nuaa.nettop.dao.main.NodeDOMapper;
-import edu.nuaa.nettop.dao.main.PhysicalDevDOMapper;
 import edu.nuaa.nettop.dao.main.PortDOMapper;
 import edu.nuaa.nettop.dao.main.ServiceNetDOMapper;
 import edu.nuaa.nettop.dao.main.TaskDOMapper;
@@ -242,27 +244,19 @@ public class ScreenServiceImpl implements ScreenService {
             jobDataMap.put("victim", request.getVictim());
             jobDataMap.put("vimServerIp", request.getVicServerIp());
 
-            if (Constants.routingRouter.containsKey(request.getWlid())) {
-                String nodeName = serviceNetDOMapper.getYxidByPrimaryKey(request.getWlid()) + nodeDOMapper.findNodeNameByPrimaryKey(Constants.routingRouter.get(request.getWlid())),
-                        serverIp = deployDOMapper.queryServerIpByDeviceName(nodeName);
-
-                jobDataMap.put("selected", nodeName);
-                jobDataMap.put("selectedServerIp", serverIp);
-            } else {
-                jobDataMap.put("selected", "");
-                jobDataMap.put("selectedServerIp", "");
+            //获取当前所有路由器的路由表信息，存入redis
+            Map<String, RoutingTable> routings = CommonUtils.getOrCreate(
+                    request.getWlid(),
+                    Constants.podRoutings,
+                    HashMap::new
+            );
+            String pre = serviceNetDOMapper.getYxidByPrimaryKey(request.getWlid());
+            for (NodeDO node : nodeDOMapper.findNodeByWlid(request.getWlid())) {
+                String nodeName = pre + node.getSbmc();
+                String serverIp = deployDOMapper.queryServerIpByDeviceName(nodeName);
+                routings.put(nodeName, ProxyUtil.getRoutingTable(serverIp, nodeName));
             }
 
-            if (!Constants.podRoutings.containsKey(request.getWlid())) {
-                Map<String, RoutingTable> routings = new HashMap<>();
-                String pre = serviceNetDOMapper.getYxidByPrimaryKey(request.getWlid());
-                for (NodeDO node : nodeDOMapper.findNodeByWlid(request.getWlid())) {
-                    String nodeName = pre + node.getSbmc(),
-                            serverIp = deployDOMapper.queryServerIpByDeviceName(nodeName);
-                    routings.put(nodeName, ProxyUtil.getRoutingTable(serverIp, nodeName));
-                }
-                Constants.podRoutings.put(request.getWlid(), routings);
-            }
             //提交任务
             taskScheduler.publishJob(jobName, jobGroup, jobDataMap, 5, OspfScreenTask.class);
         } catch (SchedulerException e) {
@@ -346,28 +340,24 @@ public class ScreenServiceImpl implements ScreenService {
     }
 
     @Override
-    public void runGetRoutingTable(String wlid, String sbid) throws MonitorException{
+    public void addRt(String wlid, String sbid, boolean isVictim) throws MonitorException{
         String pre = serviceNetDOMapper.getYxidByPrimaryKey(wlid);
-        String name = nodeDOMapper.findNodeNameByPrimaryKey(sbid);
+        String nodeName = pre + nodeDOMapper.findNodeNameByPrimaryKey(sbid);
+        String serverIp = deployDOMapper.queryServerIpByDeviceName(nodeName);
 
-        String deviceName = pre + name;
-        String serverIp = deployDOMapper.queryServerIpByDeviceName(deviceName);
-        String jobName = wlid + sbid;
-        String jobGroup = TaskType.ROUTING_TABLE.getDesc();
-        try {
-            //判断任务已存在
-            if (taskScheduler.checkExists(jobName, jobGroup)) {
-                throw new MonitorException(String.format("Job已经存在, jobName:{%s},jobGroup:{%s}", jobName, jobGroup));
-            }
-            //配置参数
-            JobDataMap jobDataMap = new JobDataMap();
-            jobDataMap.put("wlid", wlid);
-            jobDataMap.put("serverIp", serverIp);
-            jobDataMap.put("nodeName", deviceName);
-            //提交任务
-            taskScheduler.publishJob(jobName, jobGroup, jobDataMap, 5, RtTask.class);
-        } catch (SchedulerException e) {
-            throw new MonitorException(e.getMessage());
+        if (isVictim) {
+            Constants.vimRouter.put(wlid, nodeName + ":" + serverIp);
+        } else {
+            Constants.attRouter.put(wlid, nodeName + ":" + serverIp);
+        }
+    }
+
+    @Override
+    public void removeRt(String wlid, boolean isVictim) throws MonitorException {
+        if (isVictim) {
+            Constants.vimRouter.remove(wlid);
+        } else {
+            Constants.attRouter.remove(wlid);
         }
     }
 

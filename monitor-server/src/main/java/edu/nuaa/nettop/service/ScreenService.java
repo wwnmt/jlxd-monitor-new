@@ -37,7 +37,9 @@ public interface ScreenService {
 
     void addOspfScreen(OspfScreenRequest request) throws MonitorException;
 
-    void runGetRoutingTable(String wlid, String sbid) throws MonitorException;
+    void addRt(String wlid, String sbid, boolean isVictim) throws MonitorException;
+
+    void removeRt(String wlid, boolean isVictim) throws MonitorException;
 
     void cancelScreen(String jobName, String jobGroup) throws MonitorException;
 

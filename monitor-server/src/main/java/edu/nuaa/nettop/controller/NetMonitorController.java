@@ -214,40 +214,52 @@ public class NetMonitorController {
     }
 
     /**
-     * 路由器路由表推送启动接口
+     * 受害者路由器添加接口
      */
     @GetMapping("/screen/routerattack/getvictim/{wlid}/{sbid}")
     @ResponseBody
-    public Response runGetRoutingTable1(@PathVariable("wlid") String wlid,
+    public Response addVictimRouter(@PathVariable("wlid") String wlid,
                                         @PathVariable("sbid") String sbid) throws MonitorException {
-        Constants.routingRouter.put(wlid, sbid);
-        log.info("Recv new routing -> {} {}", wlid, sbid);
-
-        screenService.runGetRoutingTable(wlid, sbid);
-
-        cancelOspfScreen(wlid);
-        runOspfScreen(wlid);
-
+        log.info("Add new victim router -> {} {}", wlid, sbid);
+        screenService.addRt(wlid, sbid, true);
         return new Response("ok");
     }
 
     /**
-     * 路由器路由表推送停止接口
+     * 受害者路由器删除接口
      */
     @GetMapping("/screen/routerattack/stopvictim/{wlid}/{sbid}")
     @ResponseBody
-    public Response cancelGetRoutingTable1(@PathVariable("wlid") String wlid,
+    public Response delVictimRouter(@PathVariable("wlid") String wlid,
                                         @PathVariable("sbid") String sbid) throws MonitorException {
 
-        Constants.routingRouter.remove(wlid);
-        log.info("Del routing -> {} {}", wlid, sbid);
+        log.info("Del victim router -> {} {}", wlid, sbid);
+        screenService.removeRt(wlid, true);
+        return new Response("ok");
+    }
 
-        screenService.cancelScreen(wlid+sbid, TaskType.ROUTING_TABLE.getDesc());
-        screenService.deleteScreen(wlid+sbid, TaskType.ROUTING_TABLE.getDesc());
+    /**
+     * 攻击者路由器添加接口
+     */
+    @GetMapping("/screen/routerattack/getattackpack/{wlid}/{sbid}")
+    @ResponseBody
+    public Response addAttackerRouter(@PathVariable("wlid") String wlid,
+                                        @PathVariable("sbid") String sbid) throws MonitorException {
+        log.info("Add new attacker router -> {} {}", wlid, sbid);
+        screenService.addRt(wlid, sbid, false);
+        return new Response("ok");
+    }
 
-        cancelOspfScreen(wlid);
-        runOspfScreen(wlid);
+    /**
+     * 攻击路由器删除接口
+     */
+    @GetMapping("/screen/routerattack/stopattackpack/{wlid}/{sbid}")
+    @ResponseBody
+    public Response delAttackerRouter(@PathVariable("wlid") String wlid,
+                                           @PathVariable("sbid") String sbid) throws MonitorException {
 
+        log.info("Del attacker router -> {} {}", wlid, sbid);
+        screenService.removeRt(wlid, false);
         return new Response("ok");
     }
 }

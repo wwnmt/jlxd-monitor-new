@@ -19,12 +19,16 @@ public final class Constants {
 
     //Vr监控端口
     public static final Map<String, List<ServerReqObj>> servIntfMap = new ConcurrentHashMap<>();
+
     //Perf路由器监控集合
     //key:wlid value:sbid
     public static final Map<String, String> perfDevMap = new ConcurrentHashMap<>();
 
     // Rt监控路由器
-    public static final Map<String, String> routingRouter = new ConcurrentHashMap<>();
+    public static final Map<String, String> vimRouter = new ConcurrentHashMap<>();
+
+    // Rt监控路由器
+    public static final Map<String, String> attRouter = new ConcurrentHashMap<>();
 
     public static final Map<String, Map<String, RoutingTable>> podRoutings = new ConcurrentHashMap<>();
 
