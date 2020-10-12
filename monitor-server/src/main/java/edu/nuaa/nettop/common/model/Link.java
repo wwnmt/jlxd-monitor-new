@@ -20,6 +20,8 @@ public class Link implements Serializable {
 
     private String linkId;
 
+    private String name;
+
     private String from;
 
     private String fromPort;

@@ -117,6 +117,7 @@ public class MonitorServiceImpl implements MonitorService {
         if (flag) {
             links = linkInfoList.parallelStream().map(linkInfo -> {
                 Link link = new Link();
+                link.setName(linkInfo);
                 String[] strings1 = linkInfo.split(":");
                 link.setFrom(strings1[0].split("-")[0]);
                 link.setFromPort(strings1[0].split("-")[1]);
@@ -136,6 +137,7 @@ public class MonitorServiceImpl implements MonitorService {
                 String fromPort = portDOMapper.findNameByPrimaryKey(linkDO.getYdk());
                 String toName = nodeDOMapper.findNodeNameByPrimaryKey(linkDO.getMdsbid());
                 String toPort = portDOMapper.findNameByPrimaryKey(linkDO.getMddk());
+                link.setName(fromName+"-"+fromPort+":"+toName+"-"+toPort);
                 link.setLinkId(linkDO.getLlid());
                 link.setFrom(pre + fromName);
                 link.setFromPort(fromPort);
@@ -148,7 +150,7 @@ public class MonitorServiceImpl implements MonitorService {
         request.setWlid(wlid);
         request.setNodes(nodes);
         request.setLinks(links);
-        request.setTimeout(7);
+        request.setTimeout(5);
         return request;
     }
 
@@ -189,7 +191,7 @@ public class MonitorServiceImpl implements MonitorService {
         request.setNodeId(sbid);
         request.setName(nodeName);
         request.setServerIp(serverIp);
-        request.setTimeout(7);
+        request.setTimeout(5);
         return request;
     }
 

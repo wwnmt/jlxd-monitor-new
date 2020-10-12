@@ -5,6 +5,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,7 +19,7 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class RoutingTable {
+public class RoutingTable implements Serializable {
 
     private String nodeName;
 
@@ -27,7 +28,7 @@ public class RoutingTable {
     @Data
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class RouteContent{
+    public static class RouteContent implements Serializable{
         private String dest;
         private String gateway;
         private String mask;

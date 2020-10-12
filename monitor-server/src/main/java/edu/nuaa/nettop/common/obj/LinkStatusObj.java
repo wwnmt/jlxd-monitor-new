@@ -13,6 +13,8 @@ public class LinkStatusObj implements Serializable {
 
     private byte st;    //链路状态
 
+    private String mc; //链路名称
+
     private long tp;  //链路流量吞吐量
 
     public LinkStatusObj() {
@@ -43,10 +45,11 @@ public class LinkStatusObj implements Serializable {
         this.tp = tp;
     }
 
-    @Override
-    public String toString() {
-        return new StringJoiner(", ", LinkStatusObj.class.getSimpleName() + "[", "]")
-                .add("tp=" + tp)
-                .toString();
+    public String getMc() {
+        return mc;
+    }
+
+    public void setMc(String mc) {
+        this.mc = mc;
     }
 }

@@ -86,8 +86,7 @@ public class DDosScreenTask implements Job {
         int length = linkStatusObjList.size();
         for (int i = 0; i < 5; i++) {
             BoLinkStatus boLinkStatus = new BoLinkStatus();
-            boLinkStatus.setMc("r" + (i + 1) + ":eth" + i % 2 + "-r" + (i * 4) % 3 + ":eth1");
-//            boLinkStatus.setId(linkStatusObjList.get(i).getId());
+            boLinkStatus.setMc(linkStatusObjList.get(i).getMc());
             boLinkStatus.setSt((byte) 1);
             boLinkStatus.setTp(String.valueOf(linkStatusObjList.get(length - 1).getTp()));
             linkStatuses.add(boLinkStatus);

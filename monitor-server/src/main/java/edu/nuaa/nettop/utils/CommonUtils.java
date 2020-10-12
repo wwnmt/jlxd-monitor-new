@@ -34,8 +34,7 @@ public class CommonUtils {
         return DigestUtils.md5Hex(value).toUpperCase();
     }
 
-    public static <K, V> V getOrCreate(K key, Map<K, V> map,
-                                       Supplier<V> factory) {
+    public static <K, V> V getOrCreate(K key, Map<K, V> map, Supplier<V> factory) {
         return map.computeIfAbsent(key, k -> factory.get());
     }
 

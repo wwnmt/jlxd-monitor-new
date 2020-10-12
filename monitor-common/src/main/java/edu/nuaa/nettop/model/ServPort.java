@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,14 +18,14 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class ServPort {
+public class ServPort implements Serializable {
 
     List<Port> ports = new ArrayList<>();
 
     @Data
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class Port {
+    public static class Port implements Serializable{
         private String mc;   //服务器名称
 
         private String dkmc;  //端口名

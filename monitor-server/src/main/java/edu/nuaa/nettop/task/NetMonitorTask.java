@@ -103,6 +103,7 @@ public class NetMonitorTask implements Job {
             //计算吞吐量
             List<LinkStatusObj> linkStatusObjList = new ArrayList<>();
             newDataMap.keySet().forEach((linkId) -> {
+                //计算流量吞吐量
                 double throughput = calculatorThroughput(newDataMap.get(linkId),
                                                          oldDataMap.get(linkId),
                                                          interval);
@@ -113,12 +114,14 @@ public class NetMonitorTask implements Job {
                     linkStatusObj.setSt((byte) 0);
                     linkStatusObj.setTp(0);
                 } else {
+                    linkStatusObj.setMc(link.getName());
+                    //校验容器启动状态
                     if (errDevs.contains(link.getFrom()) || errDevs.contains(link.getTo())) {
                         linkStatusObj.setSt((byte) 0);
                     } else {
                         linkStatusObj.setSt((byte) 1);
                     }
-                    //TODO
+                    //校验容器接口状态
                     if (checkPortStatus(lxdStatusMap, link))
                         linkStatusObj.setSt((byte) 1);
                     else
