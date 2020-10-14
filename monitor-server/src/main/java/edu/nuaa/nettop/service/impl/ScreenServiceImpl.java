@@ -244,6 +244,9 @@ public class ScreenServiceImpl implements ScreenService {
             jobDataMap.put("victim", request.getVictim());
             jobDataMap.put("vimServerIp", request.getVicServerIp());
 
+            //提交任务
+            taskScheduler.publishJob(jobName, jobGroup, jobDataMap, 5, OspfScreenTask.class);
+
             //获取当前所有路由器的路由表信息，存入redis
             Map<String, RoutingTable> routings = CommonUtils.getOrCreate(
                     request.getWlid(),
@@ -256,9 +259,6 @@ public class ScreenServiceImpl implements ScreenService {
                 String serverIp = deployDOMapper.queryServerIpByDeviceName(nodeName);
                 routings.put(nodeName, ProxyUtil.getRoutingTable(serverIp, nodeName));
             }
-
-            //提交任务
-            taskScheduler.publishJob(jobName, jobGroup, jobDataMap, 5, OspfScreenTask.class);
         } catch (SchedulerException e) {
             throw new MonitorException(e.getMessage());
         }
