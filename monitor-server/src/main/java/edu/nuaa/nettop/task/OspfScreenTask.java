@@ -94,7 +94,7 @@ public class OspfScreenTask implements Job {
             }
             screenStatus.setRouters(routers);
         } else { //测试数据
-            screenStatus.setVictim("示例数据");
+            screenStatus.setVictim("test");
             List<BoVictimRouterItem> originrouters = new ArrayList<>();
             List<BoVictimRouterItem> routers = new ArrayList<>();
             for (int i = 0; i < 3; i++) {
@@ -142,7 +142,7 @@ public class OspfScreenTask implements Job {
             screenStatus.setAttackpacks(attackpacks);
         } else {
             //返回空
-            screenStatus.setAttacker("无");
+            screenStatus.setAttacker("null");
             screenStatus.setAttackpacks(null);
         }
 
