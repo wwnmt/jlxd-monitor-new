@@ -99,6 +99,36 @@ public class TaskScheduler {
     }
 
     /**
+     * 提交一个单次任务
+     */
+    @Transactional(rollbackFor = MonitorException.class)
+    public void publishJobSingle(String jobName, String jobGroup,
+                           JobDataMap jobDataMap,
+                           Class<? extends Job> clazz) throws MonitorException {
+        try {
+            //设置名称与组别
+            JobDetail jobDetail = JobBuilder
+                    .newJob(clazz)
+                    .withIdentity(JobKey.jobKey(jobName, jobGroup))
+                    .usingJobData(jobDataMap)
+                    .build();
+            SimpleTrigger trigger = TriggerBuilder.newTrigger()
+                    .withIdentity(TriggerKey.triggerKey(jobName, jobGroup))
+                    .startNow()
+                    .withSchedule(SimpleScheduleBuilder
+                            .simpleSchedule()
+                            .withMisfireHandlingInstructionIgnoreMisfires()
+                            .withRepeatCount(0))
+                    .build();
+            //提交任务
+            scheduler.scheduleJob(jobDetail, trigger);
+            log.info("Publish '{}' single Task-> {}", jobGroup, jobName);
+        } catch (SchedulerException e) {
+            throw new MonitorException(e.getMessage());
+        }
+    }
+
+    /**
      * 验证Job是否存在
      */
     public boolean checkExists(String jobName, String jobGroup) throws SchedulerException {

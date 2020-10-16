@@ -26,6 +26,7 @@ import org.springframework.web.client.RestTemplate;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
 
 /**
  * Created with IntelliJ IDEA.
@@ -44,6 +45,7 @@ public class OspfScreenTask implements Job {
         //读取参数
         JobDataMap jobDataMap = jobExecutionContext.getJobDetail().getJobDataMap();
         String wlid = jobDataMap.getString("wlid");
+        String pre = jobDataMap.getString("pre");
         String attacker;
         String attServerIp;
         String victim;
@@ -59,7 +61,10 @@ public class OspfScreenTask implements Job {
             String[] vals = Constants.vimRouter.get(wlid).split(":");
             victim = vals[0];
             vimServerIp = vals[1];
-            screenStatus.setVictim(victim);
+//            Pattern pattern = Pattern.compile("n\\d+([a-zA-Z]+.*)");
+//            victim = pattern.matcher(victim).group(1);
+            String vicName = victim.substring(victim.indexOf(pre)+pre.length());
+            screenStatus.setVictim(vicName);
             //获取初始路由表
             RoutingTable routingTable = null;
             if (Constants.podRoutings.containsKey(wlid)) {
@@ -94,7 +99,7 @@ public class OspfScreenTask implements Job {
             }
             screenStatus.setRouters(routers);
         } else { //测试数据
-            screenStatus.setVictim("test");
+            screenStatus.setVictim("测试数据");
             List<BoVictimRouterItem> originrouters = new ArrayList<>();
             List<BoVictimRouterItem> routers = new ArrayList<>();
             for (int i = 0; i < 3; i++) {
@@ -119,7 +124,8 @@ public class OspfScreenTask implements Job {
             String[] vals = Constants.attRouter.get(wlid).split(":");
             attacker = vals[0];
             attServerIp = vals[1];
-            screenStatus.setAttacker(attacker);
+            String attName = attacker.substring(attacker.indexOf(pre)+pre.length());
+            screenStatus.setAttacker(attName);
             //获取最新路由表
             //攻击路由器的攻击报文 读取redis
             List<BoOSPFAttackPack> attackpacks = new ArrayList<>();
@@ -128,35 +134,35 @@ public class OspfScreenTask implements Job {
             if (firstAttack != null && !firstAttack.isEmpty()) {
                 BoOSPFAttackPack pack = new BoOSPFAttackPack();
                 pack.setTm("1");
-                pack.setSmip(attacker);
+                pack.setSmip(attName);
                 pack.setPack(firstAttack);
                 attackpacks.add(pack);
             }
             if (secondAttack != null && !secondAttack.isEmpty()) {
                 BoOSPFAttackPack pack = new BoOSPFAttackPack();
                 pack.setTm("2");
-                pack.setSmip(attacker);
+                pack.setSmip(attName);
                 pack.setPack(secondAttack);
                 attackpacks.add(pack);
             }
             screenStatus.setAttackpacks(attackpacks);
         } else {
             //返回空
-            screenStatus.setAttacker("null");
+            screenStatus.setAttacker("无");
             screenStatus.setAttackpacks(null);
         }
 
         //所有网络报文 从李梓铜程序获取
         List<BoOSPFPackage> packs = new ArrayList<>();
-        int i = 1;
-        for (String packet : CommonUtils.getListFromRedis("lsa_from_attack_router")) {
+        List<String> attackpacks = CommonUtils.getListFromRedis("lsa_from_attack_router");
+        for (int i = attackpacks.size() - 1; i >= 0; i--) {
             BoOSPFPackage pack = new BoOSPFPackage();
-            pack.setTm(String.valueOf(i));
+            pack.setTm(String.valueOf(attackpacks.size() - i));
             pack.setSeqno(String.valueOf(i+3));
             pack.setPtype("OSPF");
-            pack.setPack(packet);
+            pack.setPack(attackpacks.get(i));
             packs.add(pack);
-            i++;
+            if (attackpacks.size() - i > 8) break;
         }
         screenStatus.setPacks(packs);
         log.info("OSPF Data-> {}", JSON.toJSONString(screenStatus));

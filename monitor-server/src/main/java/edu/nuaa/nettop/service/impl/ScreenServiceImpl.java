@@ -12,6 +12,7 @@ import edu.nuaa.nettop.entity.NodeDO;
 import edu.nuaa.nettop.entity.PhysicalPortDO;
 import edu.nuaa.nettop.entity.TaskForDDosDO;
 import edu.nuaa.nettop.model.RoutingTable;
+import edu.nuaa.nettop.task.*;
 import edu.nuaa.nettop.utils.CommonUtils;
 import edu.nuaa.nettop.utils.ProxyUtil;
 import edu.nuaa.nettop.dao.go.DeployDOMapper;
@@ -26,10 +27,6 @@ import edu.nuaa.nettop.dao.main.TaskDOMapper;
 import edu.nuaa.nettop.model.ServPort;
 import edu.nuaa.nettop.quartz.TaskScheduler;
 import edu.nuaa.nettop.service.ScreenService;
-import edu.nuaa.nettop.task.DDosScreenTask;
-import edu.nuaa.nettop.task.OspfScreenTask;
-import edu.nuaa.nettop.task.PerfScreenTask;
-import edu.nuaa.nettop.task.VrScreenTask;
 import edu.nuaa.nettop.vo.DDosScreenRequest;
 import edu.nuaa.nettop.vo.OspfScreenRequest;
 import edu.nuaa.nettop.vo.PerfScreenRequest;
@@ -215,18 +212,16 @@ public class ScreenServiceImpl implements ScreenService {
     @Override
     public OspfScreenRequest createOspfScreen(String wlid) throws MonitorException {
         OspfScreenRequest request = new OspfScreenRequest();
+        String pre = serviceNetDOMapper.getYxidByPrimaryKey(wlid);
         request.setWlid(wlid);
-        request.setPre("n3");
-        request.setAttacker("r1");
-        request.setVictim("r11");
-        request.setVicServerIp("192.168.31.14");
-        request.setAttServerIp("192.168.31.14");
+        request.setPre(pre);
         return request;
     }
 
     @Override
     public void addOspfScreen(OspfScreenRequest request) throws MonitorException {
-        //TODO 验证参数
+        //TODO
+        long start = System.currentTimeMillis();
         log.info("Recv router attack screen request-> {}", JSON.toJSONString(request));
         String jobName = request.getWlid();
         String jobGroup = TaskType.ROUTER_ATTACK_SCREEN.getDesc();
@@ -239,26 +234,25 @@ public class ScreenServiceImpl implements ScreenService {
             JobDataMap jobDataMap = new JobDataMap();
             jobDataMap.put("wlid", request.getWlid());
             jobDataMap.put("pre", request.getPre());
-            jobDataMap.put("attacker", request.getAttacker());
-            jobDataMap.put("attServerIp", request.getAttServerIp());
-            jobDataMap.put("victim", request.getVictim());
-            jobDataMap.put("vimServerIp", request.getVicServerIp());
 
             //提交任务
             taskScheduler.publishJob(jobName, jobGroup, jobDataMap, 5, OspfScreenTask.class);
+            log.info("Publish ospf time->{} ms", System.currentTimeMillis() - start);
 
-            //获取当前所有路由器的路由表信息，存入redis
-            Map<String, RoutingTable> routings = CommonUtils.getOrCreate(
-                    request.getWlid(),
-                    Constants.podRoutings,
-                    HashMap::new
-            );
+            //获取当前所有路由器的路由表信息
+            start = System.currentTimeMillis();
+            Map<String, String> nodeMap = new HashMap<>();
             String pre = serviceNetDOMapper.getYxidByPrimaryKey(request.getWlid());
             for (NodeDO node : nodeDOMapper.findNodeByWlid(request.getWlid())) {
                 String nodeName = pre + node.getSbmc();
                 String serverIp = deployDOMapper.queryServerIpByDeviceName(nodeName);
-                routings.put(nodeName, ProxyUtil.getRoutingTable(serverIp, nodeName));
+                nodeMap.put(nodeName, serverIp);
             }
+            JobDataMap jobDataMap1 = new JobDataMap();
+            jobDataMap1.put("wlid", request.getWlid());
+            jobDataMap1.put("nodeMap", nodeMap);
+            taskScheduler.publishJobSingle(jobName, "rtTask", jobDataMap1, RtTask.class);
+            log.info("get routing tables time->{} ms", System.currentTimeMillis() - start);
         } catch (SchedulerException e) {
             throw new MonitorException(e.getMessage());
         }

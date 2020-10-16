@@ -196,9 +196,11 @@ public class NetMonitorController {
     @GetMapping("/screen/routerattack/start/{wlid}")
     @ResponseBody
     public Response runOspfScreen(@PathVariable("wlid") String wlid) throws MonitorException {
+        long start = System.currentTimeMillis();
         log.info("Recv router attack screen-> {}", wlid);
         OspfScreenRequest request = screenService.createOspfScreen(wlid);
         screenService.addOspfScreen(request);
+        log.info("Controller times->{} ms.", System.currentTimeMillis() - start);
         return new Response("ok");
     }
 
