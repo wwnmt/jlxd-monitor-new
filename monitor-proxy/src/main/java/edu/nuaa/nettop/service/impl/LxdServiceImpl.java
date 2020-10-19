@@ -12,8 +12,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.io.BufferedReader;
+import java.io.DataOutputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ForkJoinPool;
@@ -80,6 +82,131 @@ public class LxdServiceImpl implements LxdService {
             routingTable.setContents(contents);
             log.info("{} routing table-> {}", nodeName, JSON.toJSONString(routingTable));
             return routingTable;
+        } catch (Exception e) {
+            throw new ProxyException(e.getMessage());
+        }
+    }
+
+    @Override
+    public void runTcpdumpCapUdp(String nodeName) throws ProxyException {
+        try {
+            String[] cmd = new String[] {
+                    "/bin/sh",
+                    "-c",
+                    "lxc exec " + nodeName + " -- bash -c 'tcpdump -nn -i eth0 udp >udp.log'" };
+            Runtime.getRuntime().exec(cmd);
+        } catch (Exception e) {
+            throw new ProxyException(e.getMessage());
+        }
+    }
+
+    @Override
+    public void runTcpdumpCapTcp(String nodeName) throws ProxyException {
+        try {
+            String[] cmd = new String[] {
+                    "/bin/sh",
+                    "-c",
+                    "lxc exec " + nodeName + " -- bash -c 'tcpdump -nn -i eth0 tcp >tcp.log'" };
+            Runtime.getRuntime().exec(cmd);
+        } catch (Exception e) {
+            throw new ProxyException(e.getMessage());
+        }
+    }
+
+    @Override
+    public void cancelTcpdump(String nodeName) throws ProxyException {
+        try {
+            String[] cmd = new String[] {
+                    "/bin/sh",
+                    "-c",
+                    "lxc exec " + nodeName + " pkill tcpdump" };
+            Runtime.getRuntime().exec(cmd);
+        } catch (Exception e) {
+            throw new ProxyException(e.getMessage());
+        }
+    }
+
+    @Override
+    public Long getUdpRate(String nodeName) throws ProxyException {
+        try {
+            String[] cmd = new String[] {
+                    "/bin/sh",
+                    "-c",
+                    "lxc exec " + nodeName + " -- wc -l udp.log" };
+            Process ps = Runtime.getRuntime().exec(cmd);
+            BufferedReader br = new BufferedReader(new InputStreamReader(ps.getInputStream()));
+            String line;
+            if  ((line = br.readLine()) != null) {
+                String result = line.split(" ")[0];
+                return Long.valueOf(result);
+            } else
+                return 0L;
+        } catch (Exception e) {
+            throw new ProxyException(e.getMessage());
+        }
+    }
+
+    @Override
+    public Long getTcpRate(String nodeName) throws ProxyException {
+        try {
+            String[] cmd = new String[] {
+                    "/bin/sh",
+                    "-c",
+                    "lxc exec " + nodeName + " -- wc -l tcp.log" };
+            Process ps = Runtime.getRuntime().exec(cmd);
+            BufferedReader br = new BufferedReader(new InputStreamReader(ps.getInputStream()));
+            String line;
+            if  ((line = br.readLine()) != null) {
+                String result = line.split(" ")[0];
+                return Long.valueOf(result);
+            } else
+                return 0L;
+        } catch (Exception e) {
+            throw new ProxyException(e.getMessage());
+        }
+    }
+
+    @Override
+    public void runMultiTcpServer(String nodeName) throws ProxyException {
+        try {
+            String[] cmd = new String[] {
+                    "/bin/sh",
+                    "-c",
+                    "lxc exec " + nodeName + " /usr/local/bin/multitcp_server 0.0.0.0:80" };
+            Runtime.getRuntime().exec(cmd);
+        } catch (Exception e) {
+            throw new ProxyException(e.getMessage());
+        }
+    }
+
+    @Override
+    public void cancelMultiTcpServer(String nodeName) throws ProxyException {
+        try {
+            String[] cmd = new String[] {
+                    "/bin/sh",
+                    "-c",
+                    "lxc exec " + nodeName + " pkill multitcp_server" };
+            Runtime.getRuntime().exec(cmd);
+        } catch (Exception e) {
+            throw new ProxyException(e.getMessage());
+        }
+    }
+
+    @Override
+    public String getDDosRate(String nodeName, String ip) throws ProxyException {
+
+        try {
+            String[] cmd = new String[] {
+                    "/bin/sh",
+                    "-c",
+                    "lxc exec " + nodeName + " -- bash -c '/usr/local/bin/multitcp --addr " + ip + ":80 --num 100'" };
+            Process ps = Runtime.getRuntime().exec(cmd);
+            BufferedReader br = new BufferedReader(new InputStreamReader(ps.getInputStream()));
+            String line;
+            if  ((line = br.readLine()) != null) {
+                return line;
+            } else
+                return null;
         } catch (Exception e) {
             throw new ProxyException(e.getMessage());
         }

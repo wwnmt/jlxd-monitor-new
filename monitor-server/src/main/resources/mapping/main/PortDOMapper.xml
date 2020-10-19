@@ -30,6 +30,12 @@
         -->
         DKID, SBID, DKMC, IP, YMCD, DK, WFSY, DBL, DKZT, ZDCJF, GXSJ, IPV, IPVYM
     </sql>
+    <select id="findIpBySbid" resultType="java.lang.String">
+    select
+    IP
+    from t_wlbs_wldk
+    where SBID = #{sbid}
+  </select>
     <select id="findDkByPrimaryKey" resultType="java.lang.Integer">
     select
     DK

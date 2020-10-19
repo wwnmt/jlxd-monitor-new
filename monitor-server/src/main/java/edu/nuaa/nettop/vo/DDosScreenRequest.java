@@ -47,6 +47,7 @@ public class DDosScreenRequest implements Serializable {
     public static class Victim implements Serializable {
         private String name;
         private String fullName;
+        private String ip;
         private String manageIp;
         private String serverIp;
     }

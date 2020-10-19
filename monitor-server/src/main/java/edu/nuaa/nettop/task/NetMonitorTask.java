@@ -170,8 +170,9 @@ public class NetMonitorTask implements Job {
     private boolean checkPortStatus(Map<String, LxdStatus> lxdStatusMap, Link link) {
         LxdStatus from = lxdStatusMap.get(link.getFrom());
         LxdStatus to = lxdStatusMap.get(link.getTo());
-        if (from == null || to == null)
-            return false;
+        if (from == null || to == null) {
+            return true;
+        }
         int count = 0;
         for (PortStatus portStatus : from.getInterfaceList()) {
             if (portStatus.getName().equals(link.getFromPort()))
@@ -207,12 +208,12 @@ public class NetMonitorTask implements Job {
         for (Link link : links) {
             long fromData = getPortOctet(list, link.getFrom(), link.getFromPort());
             long toData = getPortOctet(list, link.getTo(), link.getToPort());
-            if (fromData == 0) {
+            if (fromData == 0 && toData == 0) {
+                dataMap.put(link.getLinkId(), 0L);
+            } else if (fromData == 0) {
                 dataMap.put(link.getLinkId(), toData);
             } else if (toData == 0) {
                 dataMap.put(link.getLinkId(), fromData);
-            } else if (fromData == -1 || toData == -1) {
-                dataMap.put(link.getLinkId(), 0L);
             } else {
                 dataMap.put(link.getLinkId(), (fromData + toData) / 2);
             }
@@ -234,7 +235,7 @@ public class NetMonitorTask implements Job {
             }
             return 0;
         }
-        return -1;
+        return 0;
     }
 
     private double calculatorThroughput(double newData, double oldData, double interval) {

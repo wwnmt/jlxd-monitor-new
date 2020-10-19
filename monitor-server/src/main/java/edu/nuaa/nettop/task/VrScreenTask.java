@@ -177,6 +177,7 @@ public class VrScreenTask implements Job {
             }
         }
         //排序
+        serverIntfStatuses.addAll(vrIntfStatus);
         serverIntfStatuses.sort(Comparator.comparingLong(BoServerIntfStatus::getTp));
         int length = serverIntfStatuses.size();
         int n = Math.min(length, 5);

@@ -113,10 +113,12 @@ public class ScreenServiceImpl implements ScreenService {
         name = nodeDOMapper.findNodeNameByPrimaryKey(dDosTaskDO.getBgjdxid());
         serverIp = deployDOMapper.queryServerIpByDeviceName(pre + name);
         String manageIp = deployDOMapper.queryManageIpByDeviceName(pre + name);
+        String ip = portDOMapper.findIpBySbid(dDosTaskDO.getBgjdxid()).get(0);
         victim.setName(name);
         victim.setFullName(pre + name);
         victim.setServerIp(serverIp);
         victim.setManageIp(manageIp);
+        victim.setIp(ip);
         request.setVictim(victim);
         //设置傀儡机参数
         List<String> tdIds = dDosTdDOMapper.findTdsByRwid(dDosTaskDO.getRwid());

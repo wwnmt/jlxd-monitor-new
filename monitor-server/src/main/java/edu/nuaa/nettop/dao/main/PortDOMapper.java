@@ -4,6 +4,8 @@ import edu.nuaa.nettop.entity.PortDO;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 @Repository
 public interface PortDOMapper {
     /**
@@ -13,6 +15,8 @@ public interface PortDOMapper {
      * @mbg.generated Wed Sep 16 11:12:52 CST 2020
      */
     int insert(PortDO record);
+
+    List<String> findIpBySbid(@Param("sbid") String sbid);
 
     Integer findDkByPrimaryKey(@Param("dkid") String dkid);
 

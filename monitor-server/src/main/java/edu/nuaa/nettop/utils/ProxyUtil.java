@@ -36,7 +36,7 @@ public class ProxyUtil {
         return responseEntity.getBody();
     }
 
-    public static Long getTcpOut(String serverIp, String deviceIp) {
+    public static Long snmpGetTcpOut(String serverIp, String deviceIp) {
 
         RestTemplate restTemplate = new RestTemplate();
         Map<String, Object> params = new HashMap<>();
@@ -46,7 +46,7 @@ public class ProxyUtil {
         return responseEntity.getBody();
     }
 
-    public static Long getUdpOut(String serverIp, String deviceIp) {
+    public static Long snmpGetUdpOut(String serverIp, String deviceIp) {
         RestTemplate restTemplate = new RestTemplate();
         Map<String, Object> params = new HashMap<>();
         params.put("deviceIp", deviceIp);
@@ -100,5 +100,73 @@ public class ProxyUtil {
         String url = "http://" + serverIp + ":2081/lxd/status";
         LxdResponse response = restTemplate.postForObject(url, entity, LxdResponse.class);
         return response;
+    }
+
+    public static void runTcpdumpCapUdp(String serverIp, String nodeName) {
+        RestTemplate restTemplate = new RestTemplate();
+        Map<String, Object> params = new HashMap<>();
+        params.put("nodeName", nodeName);
+        String url = "http://" + serverIp + ":2081/lxd/cap/udp/{nodeName}";
+        ResponseEntity<Void> responseEntity = restTemplate.getForEntity(url, Void.class, params);
+    }
+
+    public static void runTcpdumpCapTcp(String serverIp, String nodeName) {
+        RestTemplate restTemplate = new RestTemplate();
+        Map<String, Object> params = new HashMap<>();
+        params.put("nodeName", nodeName);
+        String url = "http://" + serverIp + ":2081/lxd/cap/tcp/{nodeName}";
+        ResponseEntity<Void> responseEntity = restTemplate.getForEntity(url, Void.class, params);
+    }
+
+    public static void cancelTcpdump(String serverIp, String nodeName) {
+        RestTemplate restTemplate = new RestTemplate();
+        Map<String, Object> params = new HashMap<>();
+        params.put("nodeName", nodeName);
+        String url = "http://" + serverIp + ":2081/lxd/cap/cancel/{nodeName}";
+        ResponseEntity<Void> responseEntity = restTemplate.getForEntity(url, Void.class, params);
+    }
+
+    public static Long getUdpRate(String serverIp, String nodeName) {
+        RestTemplate restTemplate = new RestTemplate();
+        Map<String, Object> params = new HashMap<>();
+        params.put("nodeName", nodeName);
+        String url = "http://" + serverIp + ":2081/lxd/udp/{nodeName}";
+        ResponseEntity<Long> responseEntity = restTemplate.getForEntity(url, Long.class, params);
+        return responseEntity.getBody();
+    }
+
+    public static Long getTcpRate(String serverIp, String nodeName) {
+        RestTemplate restTemplate = new RestTemplate();
+        Map<String, Object> params = new HashMap<>();
+        params.put("nodeName", nodeName);
+        String url = "http://" + serverIp + ":2081/lxd/tcp/{nodeName}";
+        ResponseEntity<Long> responseEntity = restTemplate.getForEntity(url, Long.class, params);
+        return responseEntity.getBody();
+    }
+
+    public static String getDDosRate(String serverIp, String nodeName, String ip) {
+        RestTemplate restTemplate = new RestTemplate();
+        Map<String, Object> params = new HashMap<>();
+        params.put("nodeName", nodeName);
+        params.put("ip", ip);
+        String url = "http://" + serverIp + ":2081/lxd/ddos/rate/{nodeName}/{ip}";
+        ResponseEntity<String> responseEntity = restTemplate.getForEntity(url, String.class, params);
+        return responseEntity.getBody();
+    }
+
+    public static void runMultiServ(String serverIp, String nodeName) {
+        RestTemplate restTemplate = new RestTemplate();
+        Map<String, Object> params = new HashMap<>();
+        params.put("nodeName", nodeName);
+        String url = "http://" + serverIp + ":2081/lxd/ddos/serv/{nodeName}";
+        ResponseEntity<Void> responseEntity = restTemplate.getForEntity(url, Void.class, params);
+    }
+
+    public static void main(String[] args) {
+//        runTcpdumpCapTcp("192.168.31.13", "n4td1");
+//        runTcpdumpCapUdp("192.168.31.13", "n4td1");
+//        cancelTcpdump("192.168.31.13", "n4td1");
+        System.out.println(getTcpRate("192.168.31.13", "n4td1"));
+        System.out.println(getUdpRate("192.168.31.13", "n4td1"));
     }
 }

@@ -32,6 +32,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Created with IntelliJ IDEA.
@@ -60,7 +61,7 @@ public class DDosScreenTask implements Job {
         ddosScreenStatus.setWlid(wlid);
         //被攻击节点数据
         long start = System.currentTimeMillis();
-        ddosScreenStatus.setVicSt(setVictimData(victim));
+        ddosScreenStatus.setVicSt(setVictimData(victim, tds.get(0)));
         log.debug("victim times: {}", System.currentTimeMillis() - start);
         //傀儡机数据
         start = System.currentTimeMillis();
@@ -69,7 +70,7 @@ public class DDosScreenTask implements Job {
         //服务器资源数据
         start = System.currentTimeMillis();
         for (String serverIp : serverIps) {
-            if (serverIp.equals("192.168.31.12") || serverIp.equals("192.168.31.14")) {
+            if (serverIp.equals("192.168.31.12")) {
                 continue;
             }
             ddosScreenStatus.addServer(setServerData(serverIp));
@@ -86,7 +87,7 @@ public class DDosScreenTask implements Job {
         int length = linkStatusObjList.size();
         for (int i = 0; i < 5; i++) {
             BoLinkStatus boLinkStatus = new BoLinkStatus();
-            boLinkStatus.setMc(linkStatusObjList.get(i).getMc());
+            boLinkStatus.setMc(linkStatusObjList.get(length - 1).getMc());
             boLinkStatus.setSt((byte) 1);
             boLinkStatus.setTp(String.valueOf(linkStatusObjList.get(length - 1).getTp()));
             linkStatuses.add(boLinkStatus);
@@ -133,15 +134,23 @@ public class DDosScreenTask implements Job {
         return boServerStatus;
     }
 
-    private BoTdStatus setTdData(List<DDosScreenRequest.Td> tds) {
+    private BoTdStatus setTdData(List<DDosScreenRequest.Td> tds) throws InterruptedException {
         BoTdStatus tdStatus = new BoTdStatus();
         List<Long> tcpList = new ArrayList<>();
         List<Long> udpList = new ArrayList<>();
+        //启动tcpdump监听udp tcp报文发送数量
         for (DDosScreenRequest.Td td : tds) {
-            long tcpOutRatio = ProxyUtil.getTcpOut(td.getServerIp(), td.getManageIp());
-            long udpOutRatio = ProxyUtil.getUdpOut(td.getServerIp(), td.getManageIp());
-            tcpList.add(tcpOutRatio * 100);
-            udpList.add(udpOutRatio * 100);
+            ProxyUtil.runTcpdumpCapUdp(td.getServerIp(), td.getFullName());
+            ProxyUtil.runTcpdumpCapTcp(td.getServerIp(), td.getFullName());
+        }
+        //等待3秒
+        TimeUnit.SECONDS.sleep(3);
+        for (DDosScreenRequest.Td td : tds) {
+            long tcpOutRatio = ProxyUtil.getTcpRate(td.getServerIp(), td.getFullName());
+            long udpOutRatio = ProxyUtil.getUdpRate(td.getServerIp(), td.getFullName());
+            tcpList.add(tcpOutRatio / 3);
+            udpList.add(udpOutRatio / 3);
+            ProxyUtil.cancelTcpdump(td.getServerIp(), td.getFullName());
         }
         tdStatus.setMaxtcp(Collections.max(tcpList));
         tdStatus.setMintcp(Collections.min(tcpList));
@@ -152,12 +161,19 @@ public class DDosScreenTask implements Job {
         return tdStatus;
     }
 
-    private BoVictimStatus setVictimData(DDosScreenRequest.Victim victim) throws MonitorException {
+    private BoVictimStatus setVictimData(DDosScreenRequest.Victim victim, DDosScreenRequest.Td td) throws MonitorException {
         BoVictimStatus victimStatus = new BoVictimStatus();
         victimStatus.setMc(victim.getName());
         //SYN_FLOOD攻击效果
-        DecimalFormat df = new DecimalFormat("0.00");
-        victimStatus.setRate(Double.parseDouble(df.format(Math.random())));
+        //启动multi_server
+        ProxyUtil.runMultiServ(victim.getServerIp(), victim.getFullName());
+        String rate = ProxyUtil.getDDosRate(td.getServerIp(), td.getFullName(), victim.getIp());
+        if (rate == null)
+            victimStatus.setRate(0);
+        else
+            victimStatus.setRate(Double.parseDouble(rate));
+        //停止multi_server
+        ProxyUtil.cancelTcpdump(victim.getServerIp(), victim.getFullName());
         /*
             用wc -l进行统计即可得出某个端口的连接数
             snmpwalk -v2c -c snmp_community_string 192.168.0.1 .1.3.6.1.2.1.6.13.1.3.192.168.0.1.80 | wc -l
