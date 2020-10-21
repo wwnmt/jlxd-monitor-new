@@ -1,6 +1,7 @@
 package edu.nuaa.nettop.utils;
 
 
+import edu.nuaa.nettop.config.StaticConfig;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
@@ -74,9 +75,9 @@ public class CommonUtils {
         JedisConnectionFactory factory = new JedisConnectionFactory(poolConfig);
         RedisStandaloneConfiguration configuration = factory.getStandaloneConfiguration();
         assert configuration != null;
-        configuration.setHostName("192.168.31.15");
-        configuration.setPort(6379);
-        configuration.setPassword("123456");
+        configuration.setHostName(StaticConfig.REDIS_HOST);
+        configuration.setPort(StaticConfig.REDIS_PORT);
+        configuration.setPassword(StaticConfig.REDIS_PASSWORD);
         return factory;
     }
 }
