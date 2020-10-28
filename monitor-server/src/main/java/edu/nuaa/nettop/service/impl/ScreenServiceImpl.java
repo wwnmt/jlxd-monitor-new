@@ -196,18 +196,25 @@ public class ScreenServiceImpl implements ScreenService {
         }
         request.setLinkBandwidthMap(linkBandwidthMap);
         //读取路由器名称
-        String sbid;
+        String sbid = null;
         String pre = serviceNetDOMapper.getYxidByPrimaryKey(wlid);
         if (Constants.perfDevMap.containsKey(wlid)) {
             sbid = Constants.perfDevMap.get(wlid);
         } else {
-            sbid = nodeDOMapper.findNodeByWlid(wlid).get(0).getSbid();
+            for (NodeDO nodeDO : nodeDOMapper.findNodeByWlid(wlid)) {
+                if (!nodeDO.getSbmc().contains("tg")) {
+                    sbid = nodeDO.getSbid();
+                    break;
+                }
+            }
         }
         String devName = nodeDOMapper.findNodeNameByPrimaryKey(sbid);
         String serverIp = deployDOMapper.queryServerIpByDeviceName(pre + devName);
+        String manageIp = deployDOMapper.queryManageIpByDeviceName(pre + devName);
         request.setRouterId(sbid);
         request.setRouterName(pre + devName);
         request.setRouterDeployServer(serverIp);
+        request.setRouterManageIp(manageIp);
         return request;
     }
 
@@ -328,6 +335,7 @@ public class ScreenServiceImpl implements ScreenService {
             jobDataMap.put("router", request.getRouterName());
             jobDataMap.put("routerId", request.getRouterId());
             jobDataMap.put("ip", request.getRouterDeployServer());
+            jobDataMap.put("manageIp", request.getRouterManageIp());
             //提交任务
             taskScheduler.publishJob(jobName, jobGroup, jobDataMap, 5, PerfScreenTask.class);
         } catch (SchedulerException e) {

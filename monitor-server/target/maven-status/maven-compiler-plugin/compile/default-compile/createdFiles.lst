@@ -38,6 +38,7 @@ edu\nuaa\nettop\common\response\BoPortStatus.class
 edu\nuaa\nettop\controller\NetMonitorController.class
 edu\nuaa\nettop\vo\DDosScreenRequest.class
 edu\nuaa\nettop\service\MonitorService.class
+edu\nuaa\nettop\common\response\perf\BoDevNetCount.class
 edu\nuaa\nettop\dao\main\PhysicalDevDOMapper.class
 edu\nuaa\nettop\quartz\QuartzConfig.class
 edu\nuaa\nettop\vo\RtRequest.class

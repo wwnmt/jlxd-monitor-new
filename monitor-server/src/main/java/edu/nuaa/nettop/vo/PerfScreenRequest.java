@@ -33,4 +33,6 @@ public class PerfScreenRequest {
     private String routerName;
 
     private String routerDeployServer;
+
+    private String routerManageIp;
 }

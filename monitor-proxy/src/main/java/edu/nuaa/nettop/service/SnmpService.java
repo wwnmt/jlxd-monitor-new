@@ -1,6 +1,7 @@
 package edu.nuaa.nettop.service;
 
 
+import edu.nuaa.nettop.model.PktStatistics;
 import edu.nuaa.nettop.model.ServMem;
 import edu.nuaa.nettop.model.ServPort;
 import edu.nuaa.nettop.vo.snmp.SnmpRequest;
@@ -28,4 +29,6 @@ public interface SnmpService {
     Long getTcpIn(SnmpRequest request);
 
     Long getTcpOut(SnmpRequest request);
+
+    PktStatistics getPktSta(SnmpRequest request);
 }

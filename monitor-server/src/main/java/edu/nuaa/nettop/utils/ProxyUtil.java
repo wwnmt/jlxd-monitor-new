@@ -1,6 +1,7 @@
 package edu.nuaa.nettop.utils;
 
 import edu.nuaa.nettop.common.exception.MonitorException;
+import edu.nuaa.nettop.model.PktStatistics;
 import edu.nuaa.nettop.model.RoutingTable;
 import edu.nuaa.nettop.model.ServMem;
 import edu.nuaa.nettop.model.ServPort;
@@ -162,11 +163,19 @@ public class ProxyUtil {
         ResponseEntity<Void> responseEntity = restTemplate.getForEntity(url, Void.class, params);
     }
 
+    public static PktStatistics getDevPktSta(String serverIp, String deviceIp) {
+        RestTemplate restTemplate = new RestTemplate();
+        Map<String, Object> params = new HashMap<>();
+        params.put("deviceIp", deviceIp);
+        String url = "http://" + serverIp + ":2081/snmp/dev/pkt/{deviceIp}";
+        ResponseEntity<PktStatistics> responseEntity = restTemplate.getForEntity(url, PktStatistics.class, params);
+        return responseEntity.getBody();
+    }
+
     public static void main(String[] args) {
 //        runTcpdumpCapTcp("192.168.31.13", "n4td1");
 //        runTcpdumpCapUdp("192.168.31.13", "n4td1");
 //        cancelTcpdump("192.168.31.13", "n4td1");
-        System.out.println(getTcpRate("192.168.31.13", "n4td1"));
-        System.out.println(getUdpRate("192.168.31.13", "n4td1"));
+        System.out.println(getDevPktSta("192.168.31.13", "1.20.0.8"));
     }
 }

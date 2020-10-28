@@ -1,5 +1,6 @@
 G:\idea\nettop_new\jlxd-monitor\monitor-server\src\main\java\edu\nuaa\nettop\quartz\QuartzPropertiesConfig.java
 G:\idea\nettop_new\jlxd-monitor\monitor-server\src\main\java\edu\nuaa\nettop\vo\NodeRequest.java
+G:\idea\nettop_new\jlxd-monitor\monitor-server\src\main\java\edu\nuaa\nettop\common\response\perf\BoDevNetCount.java
 G:\idea\nettop_new\jlxd-monitor\monitor-server\src\main\java\edu\nuaa\nettop\common\obj\LinkStatusObj.java
 G:\idea\nettop_new\jlxd-monitor\monitor-server\src\main\java\edu\nuaa\nettop\common\response\vr\BoVirtRealConnScreenStatus.java
 G:\idea\nettop_new\jlxd-monitor\monitor-server\src\main\java\edu\nuaa\nettop\service\impl\ScreenServiceImpl.java

@@ -1,5 +1,6 @@
 package edu.nuaa.nettop.controller;
 
+import edu.nuaa.nettop.model.PktStatistics;
 import edu.nuaa.nettop.model.ServMem;
 import edu.nuaa.nettop.model.ServPort;
 import edu.nuaa.nettop.service.SnmpService;
@@ -106,5 +107,15 @@ public class SnmpController {
         return snmpService.getServerPort(request);
     }
 
-
+    @RequestMapping(value = "dev/pkt/{deviceIp}", method = RequestMethod.GET)
+    @ResponseBody
+    public PktStatistics getDevPktSta(@PathVariable String deviceIp) {
+        log.info("Get {} server port", deviceIp);
+        SnmpRequest request = new SnmpRequest();
+        request.setDeviceIp(deviceIp);
+        request.setCommunityName("public");
+        request.setPort(161);
+        request.setVersion(1);
+        return snmpService.getPktSta(request);
+    }
 }

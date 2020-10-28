@@ -5,5 +5,6 @@ G:\idea\nettop_new\jlxd-monitor\monitor-common\src\main\java\edu\nuaa\nettop\vo\
 G:\idea\nettop_new\jlxd-monitor\monitor-common\src\main\java\edu\nuaa\nettop\vo\snmp\SnmpRequest.java
 G:\idea\nettop_new\jlxd-monitor\monitor-common\src\main\java\edu\nuaa\nettop\model\LxdStatus.java
 G:\idea\nettop_new\jlxd-monitor\monitor-common\src\main\java\edu\nuaa\nettop\model\RoutingTable.java
+G:\idea\nettop_new\jlxd-monitor\monitor-common\src\main\java\edu\nuaa\nettop\model\PktStatistics.java
 G:\idea\nettop_new\jlxd-monitor\monitor-common\src\main\java\edu\nuaa\nettop\model\ServMem.java
 G:\idea\nettop_new\jlxd-monitor\monitor-common\src\main\java\edu\nuaa\nettop\vo\lxd\LxdRequest.java

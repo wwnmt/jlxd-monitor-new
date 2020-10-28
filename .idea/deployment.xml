@@ -6,9 +6,9 @@
         <serverdata>
           <mappings>
             <mapping deploy="/" local="$PROJECT_DIR$" web="/" />
-            <mapping local="$PROJECT_DIR$/monitor-server" />
-            <mapping local="$PROJECT_DIR$/monitor-proxy" />
-            <mapping local="$PROJECT_DIR$/monitor-common" />
+            <mapping deploy="/monitor-server" local="$PROJECT_DIR$/monitor-server" />
+            <mapping deploy="/monitor-proxy" local="$PROJECT_DIR$/monitor-proxy" />
+            <mapping deploy="/monitor-common" local="$PROJECT_DIR$/monitor-common" />
           </mappings>
         </serverdata>
       </paths>

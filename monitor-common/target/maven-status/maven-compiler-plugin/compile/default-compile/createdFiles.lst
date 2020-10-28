@@ -4,6 +4,7 @@ edu\nuaa\nettop\model\ServPort$Port.class
 edu\nuaa\nettop\vo\lxd\LxdRequest.class
 edu\nuaa\nettop\model\PortStatus.class
 edu\nuaa\nettop\vo\snmp\SnmpRequest.class
+edu\nuaa\nettop\model\PktStatistics.class
 edu\nuaa\nettop\model\ServMem.class
 edu\nuaa\nettop\model\RoutingTable$RouteContent.class
 edu\nuaa\nettop\model\RoutingTable.class

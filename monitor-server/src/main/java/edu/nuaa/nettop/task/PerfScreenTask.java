@@ -6,11 +6,13 @@ import edu.nuaa.nettop.common.obj.DevStatusObj;
 import edu.nuaa.nettop.common.obj.LinkStatusObj;
 import edu.nuaa.nettop.common.obj.PortStatusObj;
 import edu.nuaa.nettop.common.response.BoDevStatus;
+import edu.nuaa.nettop.common.response.perf.BoDevNetCount;
 import edu.nuaa.nettop.common.response.perf.BoLinkLrbStatus;
 import edu.nuaa.nettop.common.response.BoLinkStatus;
 import edu.nuaa.nettop.common.response.BoNetServStatus;
 import edu.nuaa.nettop.common.response.perf.BoPerfOptScreenStatus;
 import edu.nuaa.nettop.common.response.BoRestResObj;
+import edu.nuaa.nettop.model.PktStatistics;
 import edu.nuaa.nettop.utils.CommonUtils;
 import edu.nuaa.nettop.utils.ProxyUtil;
 import edu.nuaa.nettop.config.StaticConfig;
@@ -65,17 +67,32 @@ public class PerfScreenTask implements Job {
         routerName = jobDataMap.getString("router");
         serverIp = jobDataMap.getString("ip");
         routerId = jobDataMap.getString("routerId");
+        String manageIp = jobDataMap.getString("manageIp");
         serverIps.remove("192.168.31.12");
         log.info("Run Perf screen task-> {}", wlid);
         screenStatus.setWlid(wlid);
         //服务器总体资源利用率
         setServerData(screenStatus, serverIps);
         //路由器资源监控
-        try {
-            setRouterData(wlid, screenStatus);
-        } catch (MonitorException e) {
-            throw new JobExecutionException(e.getMessage());
-        }
+//        try {
+//            setRouterData(wlid, screenStatus);
+//        } catch (MonitorException e) {
+//            throw new JobExecutionException(e.getMessage());
+//        }
+        //设置设备分组统计信息
+        PktStatistics pktStatistics = ProxyUtil.getDevPktSta(serverIp, manageIp);
+        BoDevNetCount boDevNetCount = new BoDevNetCount();
+        boDevNetCount.setIpIn(pktStatistics.getIpIn());
+        boDevNetCount.setIpOut(pktStatistics.getIpOut());
+        boDevNetCount.setTcpIn(pktStatistics.getTcpIn());
+        boDevNetCount.setTcpOut(pktStatistics.getTcpOut());
+        boDevNetCount.setUdpIn(pktStatistics.getUdpIn());
+        boDevNetCount.setUdpOut(pktStatistics.getUdpOut());
+        boDevNetCount.setIpInErrs(pktStatistics.getIpInErrs());
+        boDevNetCount.setTcpInErrs(pktStatistics.getTcpInErrs());
+        boDevNetCount.setUdpInErrs(pktStatistics.getUdpInErrs());
+        screenStatus.setDevNetCount(boDevNetCount);
+
         //链路流量吞吐量
         setLinkData(wlid, screenStatus);
         //setTM
@@ -139,7 +156,7 @@ public class PerfScreenTask implements Job {
                 }
             }
             devStatusObj.setPorts(ports);
-            screenStatus.setRouterstatus(new BoDevStatus(devStatusObj));
+//            screenStatus.setRouterstatus(new BoDevStatus(devStatusObj));
         }
     }
 

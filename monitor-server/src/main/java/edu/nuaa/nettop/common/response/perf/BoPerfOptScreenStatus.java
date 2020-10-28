@@ -35,5 +35,7 @@ public class BoPerfOptScreenStatus implements Serializable {
 
     private List<BoLinkLrbStatus> rlinks = new ArrayList<>();   //链路容量与流量大小比值的前10位的柱状图
 
-    private BoDevStatus routerstatus; //路由器信息
+//    private BoDevStatus routerstatus; //路由器信息
+
+    private BoDevNetCount devNetCount; //设备分组收发、差错统计
 }

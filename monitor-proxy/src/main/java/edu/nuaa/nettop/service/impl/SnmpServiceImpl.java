@@ -1,5 +1,6 @@
 package edu.nuaa.nettop.service.impl;
 
+import edu.nuaa.nettop.model.PktStatistics;
 import edu.nuaa.nettop.model.ServMem;
 import edu.nuaa.nettop.model.ServPort;
 import edu.nuaa.nettop.service.SnmpService;
@@ -187,5 +188,31 @@ public class SnmpServiceImpl implements SnmpService {
             tcpOutList = SnmpUtils.walk("1.3.6.1.2.1.6.11", request);
         }
         return Long.valueOf(tcpOutList.get(0));
+    }
+
+    @Override
+    public PktStatistics getPktSta(SnmpRequest request) {
+        Long ipIn = Long.valueOf(SnmpUtils.walk("1.3.6.1.2.1.4.3", request).get(0));
+        Long ipOut = Long.valueOf(SnmpUtils.walk("1.3.6.1.2.1.4.10", request).get(0));
+
+        Long tcpIn = Long.valueOf(SnmpUtils.walk("1.3.6.1.2.1.6.10", request).get(0));
+        Long tcpOut = Long.valueOf(SnmpUtils.walk("1.3.6.1.2.1.6.11", request).get(0));
+
+        Long udpIn = Long.valueOf(SnmpUtils.walk("1.3.6.1.2.1.7.1", request).get(0));
+        Long udpOut = Long.valueOf(SnmpUtils.walk("1.3.6.1.2.1.7.4", request).get(0));
+
+        Long tcpErrs = Long.valueOf(SnmpUtils.walk("1.3.6.1.2.1.6.14", request).get(0));
+        Long udpErrs = Long.valueOf(SnmpUtils.walk("1.3.6.1.2.1.7.3", request).get(0));
+
+        long ipHdrErrs = Long.parseLong(SnmpUtils.walk("1.3.6.1.2.1.4.4", request).get(0));
+        long ipaddrErrs = Long.parseLong(SnmpUtils.walk("1.3.6.1.2.1.4.5", request).get(0));
+        Long ipErrs = ipHdrErrs + ipaddrErrs;
+
+        return new PktStatistics(
+                ipIn, ipOut,
+                tcpIn, tcpOut,
+                udpIn, udpOut,
+                ipErrs, tcpErrs, udpErrs
+        );
     }
 }
