@@ -26,11 +26,31 @@ public class BoDevNetCount implements Serializable {
 
     private Long udpOut;    //udp发送数量
 
+    private Long icmpIn;
+
+    private Long icmpOut;
+
     private Long ipInErrs;    //ip接收错误报文数量（综合ip地址错误、MAC地址错误和路由错误）
 
     private Long tcpInErrs;   //tcp接收错误报文数量
 
     private Long udpInErrs;   //udp接收错误报文数量
+
+    public Long getIcmpIn() {
+        return icmpIn;
+    }
+
+    public void setIcmpIn(Long icmpIn) {
+        this.icmpIn = icmpIn;
+    }
+
+    public Long getIcmpOut() {
+        return icmpOut;
+    }
+
+    public void setIcmpOut(Long icmpOut) {
+        this.icmpOut = icmpOut;
+    }
 
     public Long getIpIn() {
         return ipIn;

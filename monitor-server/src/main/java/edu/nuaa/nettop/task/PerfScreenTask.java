@@ -74,11 +74,11 @@ public class PerfScreenTask implements Job {
         //服务器总体资源利用率
         setServerData(screenStatus, serverIps);
         //路由器资源监控
-//        try {
-//            setRouterData(wlid, screenStatus);
-//        } catch (MonitorException e) {
-//            throw new JobExecutionException(e.getMessage());
-//        }
+        try {
+            setRouterData(wlid, screenStatus);
+        } catch (MonitorException e) {
+            throw new JobExecutionException(e.getMessage());
+        }
         //设置设备分组统计信息
         PktStatistics pktStatistics = ProxyUtil.getDevPktSta(serverIp, manageIp);
         BoDevNetCount boDevNetCount = new BoDevNetCount();
@@ -91,6 +91,8 @@ public class PerfScreenTask implements Job {
         boDevNetCount.setIpInErrs(pktStatistics.getIpInErrs());
         boDevNetCount.setTcpInErrs(pktStatistics.getTcpInErrs());
         boDevNetCount.setUdpInErrs(pktStatistics.getUdpInErrs());
+        boDevNetCount.setIcmpIn(pktStatistics.getIcmpIn());
+        boDevNetCount.setIcmpOut(pktStatistics.getIcmpOut());
         screenStatus.setDevNetCount(boDevNetCount);
 
         //链路流量吞吐量
@@ -156,7 +158,7 @@ public class PerfScreenTask implements Job {
                 }
             }
             devStatusObj.setPorts(ports);
-//            screenStatus.setRouterstatus(new BoDevStatus(devStatusObj));
+            screenStatus.setRouterstatus(new BoDevStatus(devStatusObj));
         }
     }
 

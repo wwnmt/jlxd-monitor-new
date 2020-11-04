@@ -32,6 +32,10 @@ public class PktStatistics implements Serializable {
 
     private Long udpOut;    //udp发送数量
 
+    private Long icmpIn;
+
+    private Long icmpOut;
+
     private Long ipInErrs;    //ip接收错误报文数量（综合ip地址错误、MAC地址错误和路由错误）
 
     private Long tcpInErrs;   //tcp接收错误报文数量

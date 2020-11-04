@@ -1,5 +1,7 @@
 package edu.nuaa.nettop.service.impl;
 
+import com.alibaba.fastjson.JSON;
+import edu.nuaa.nettop.model.DevPktStatistic;
 import edu.nuaa.nettop.model.PktStatistics;
 import edu.nuaa.nettop.model.ServMem;
 import edu.nuaa.nettop.model.ServPort;
@@ -10,7 +12,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.text.DecimalFormat;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Created with IntelliJ IDEA.
@@ -24,6 +29,8 @@ import java.util.List;
 public class SnmpServiceImpl implements SnmpService {
 
     private static final DecimalFormat df = new DecimalFormat("#.00");
+
+    private static final Map<String, DevPktStatistic> devPktMap = new ConcurrentHashMap<>();
 
     @Override
     public String getServerCpuUtilization(SnmpRequest request) {
@@ -192,27 +199,66 @@ public class SnmpServiceImpl implements SnmpService {
 
     @Override
     public PktStatistics getPktSta(SnmpRequest request) {
-        Long ipIn = Long.valueOf(SnmpUtils.walk("1.3.6.1.2.1.4.3", request).get(0));
-        Long ipOut = Long.valueOf(SnmpUtils.walk("1.3.6.1.2.1.4.10", request).get(0));
+        //直接获取一次数据
+        long nowTime = System.currentTimeMillis();
+        try {
+            Long ipIn = Long.valueOf(SnmpUtils.walk("1.3.6.1.2.1.4.3", request).get(0));
+            Long ipOut = Long.valueOf(SnmpUtils.walk("1.3.6.1.2.1.4.10", request).get(0));
 
-        Long tcpIn = Long.valueOf(SnmpUtils.walk("1.3.6.1.2.1.6.10", request).get(0));
-        Long tcpOut = Long.valueOf(SnmpUtils.walk("1.3.6.1.2.1.6.11", request).get(0));
+            Long tcpIn = Long.valueOf(SnmpUtils.walk("1.3.6.1.2.1.6.10", request).get(0));
+            Long tcpOut = Long.valueOf(SnmpUtils.walk("1.3.6.1.2.1.6.11", request).get(0));
 
-        Long udpIn = Long.valueOf(SnmpUtils.walk("1.3.6.1.2.1.7.1", request).get(0));
-        Long udpOut = Long.valueOf(SnmpUtils.walk("1.3.6.1.2.1.7.4", request).get(0));
+            Long udpIn = Long.valueOf(SnmpUtils.walk("1.3.6.1.2.1.7.1", request).get(0));
+            Long udpOut = Long.valueOf(SnmpUtils.walk("1.3.6.1.2.1.7.4", request).get(0));
 
-        Long tcpErrs = Long.valueOf(SnmpUtils.walk("1.3.6.1.2.1.6.14", request).get(0));
-        Long udpErrs = Long.valueOf(SnmpUtils.walk("1.3.6.1.2.1.7.3", request).get(0));
+            Long icmpIn = Long.valueOf(SnmpUtils.walk("1.3.6.1.2.1.5.1", request).get(0));
+            Long icmpOut = Long.valueOf(SnmpUtils.walk("1.3.6.1.2.1.5.14", request).get(0));
 
-        long ipHdrErrs = Long.parseLong(SnmpUtils.walk("1.3.6.1.2.1.4.4", request).get(0));
-        long ipaddrErrs = Long.parseLong(SnmpUtils.walk("1.3.6.1.2.1.4.5", request).get(0));
-        Long ipErrs = ipHdrErrs + ipaddrErrs;
+            Long tcpErrs = Long.valueOf(SnmpUtils.walk("1.3.6.1.2.1.6.14", request).get(0));
+            Long udpErrs = Long.valueOf(SnmpUtils.walk("1.3.6.1.2.1.7.3", request).get(0));
 
-        return new PktStatistics(
-                ipIn, ipOut,
-                tcpIn, tcpOut,
-                udpIn, udpOut,
-                ipErrs, tcpErrs, udpErrs
-        );
+            long ipHdrErrs = Long.parseLong(SnmpUtils.walk("1.3.6.1.2.1.4.4", request).get(0));
+            long ipaddrErrs = Long.parseLong(SnmpUtils.walk("1.3.6.1.2.1.4.5", request).get(0));
+
+            Long ipErrs = ipHdrErrs + ipaddrErrs;
+            //计算速率
+            String key = request.getDeviceIp();
+            //当没有历史数据时，返回0并存储当前数据
+            if (!devPktMap.containsKey(key)) {
+                DevPktStatistic devPktStatistic = new DevPktStatistic(
+                        nowTime, ipIn, ipOut, tcpIn, tcpOut, udpIn, udpOut, icmpIn, icmpOut
+                );
+                devPktMap.put(key, devPktStatistic);
+                return new PktStatistics(
+                        0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L,
+                        ipErrs, tcpErrs, udpErrs
+                );
+            } else {
+                log.info("pkt->{}", JSON.toJSONString(devPktMap.get(key)));
+                log.info("{},{},{},{},{},{},{},{}", ipIn, ipOut, tcpIn, tcpOut, udpIn, udpOut, icmpIn, icmpOut);
+                DevPktStatistic devPktStatisticOld = devPktMap.get(key);
+                DevPktStatistic devPktStatisticNew = new DevPktStatistic(
+                        nowTime, ipIn, ipOut, tcpIn, tcpOut, udpIn, udpOut, icmpIn, icmpOut
+                );
+                devPktMap.put(key, devPktStatisticNew);
+                long interval = (System.currentTimeMillis() - devPktStatisticOld.getTime()) / 1000;
+                return new PktStatistics(
+                        (ipIn - devPktStatisticOld.getIpIn()) / interval,
+                        (ipOut - devPktStatisticOld.getIpOut()) / interval,
+                        (tcpIn - devPktStatisticOld.getTcpIn()) / interval,
+                        (tcpOut - devPktStatisticOld.getTcpOut()) / interval,
+                        (udpIn - devPktStatisticOld.getUdpIn()) / interval,
+                        (udpOut - devPktStatisticOld.getUdpOut()) / interval,
+                        (icmpIn - devPktStatisticOld.getIcmpIn()) / interval,
+                        (icmpOut - devPktStatisticOld.getIcmpOut()) / interval,
+                        ipErrs, tcpErrs, udpErrs
+                );
+            }
+        } catch (ArrayIndexOutOfBoundsException e) {
+            return new PktStatistics(
+                    0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L,
+                    0L, 0L, 0L
+            );
+        }
     }
 }
